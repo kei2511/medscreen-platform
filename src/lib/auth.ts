@@ -1,7 +1,11 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET as string;
+
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required');
+}
 
 export interface TokenPayload {
   doctorId: string;
@@ -14,7 +18,11 @@ export function generateToken(payload: TokenPayload): string {
 
 export function verifyToken(token: string): TokenPayload | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as TokenPayload;
+    const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload;
+    return {
+      doctorId: decoded.doctorId as string,
+      email: decoded.email as string
+    };
   } catch (error) {
     return null;
   }
