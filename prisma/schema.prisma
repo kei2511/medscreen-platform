@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Model untuk Dokter/Pengguna
+model Doctor {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  password    String // Password akan di-hash sebelum disimpan
+  name        String?
+  patients    Patient[]
+  templates   QuestionnaireTemplate[]
+  results     ScreeningResult[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Model untuk Pasien
+model Patient {
+  id          String   @id @default(cuid())
+  name        String
+  age         Int
+  doctor      Doctor   @relation(fields: [doctorId], references: [id])
+  doctorId    String
+  results     ScreeningResult[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Model untuk Template Kuesioner
+model QuestionnaireTemplate {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  doctor      Doctor   @relation(fields: [doctorId], references: [id])
+  doctorId    String
+  questions   Json     // Menyimpan struktur pertanyaan & jawaban sebagai JSON
+  resultTiers Json     // Menyimpan definisi hasil sebagai JSON
+  results     ScreeningResult[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Model untuk Hasil Skrining
+model ScreeningResult {
+  id          String    @id @default(cuid())
+  patient     Patient   @relation(fields: [patientId], references: [id])
+  patientId   String
+  doctor      Doctor    @relation(fields: [doctorId], references: [id])
+  doctorId    String
+  template    QuestionnaireTemplate @relation(fields: [templateId], references: [id])
+  templateId  String
+  date        DateTime  @default(now())
+  totalScore  Int
+  resultLabel String
+  recommendation String?
+  answers     Json      // Menyimpan jawaban lengkap untuk referensi
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
