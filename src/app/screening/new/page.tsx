@@ -132,8 +132,8 @@ function NewScreeningContent() {
   };
 
   const handleSubmit = async () => {
-    if (!selectedQuestionnaire || !selectedPatient || !answers.find(a => a.questionIndex === currentQuestionIndex)) {
-      alert('Harap jawab pertanyaan terlebih dahulu');
+    if (!selectedQuestionnaire || !selectedPatient || answers.length !== selectedQuestionnaire.questions.length) {
+      alert('Harap jawab semua pertanyaan terlebih dahulu');
       return;
     }
 
@@ -350,7 +350,7 @@ function NewScreeningContent() {
                         />
                         <span className="text-black">{option.text}</span>
                       </label>
-                      {answers.find(a => a.questionIndex === currentQuestionIndex)?.optionIndex === index && (
+                      {option.type === 'custom' && answers.find(a => a.questionIndex === currentQuestionIndex)?.optionIndex === index && (
                         <input
                           type="text"
                           placeholder="Masukkan jawaban Anda"

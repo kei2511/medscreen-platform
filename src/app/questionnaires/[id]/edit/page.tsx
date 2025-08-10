@@ -80,7 +80,7 @@ export default function EditQuestionnaire() {
       text: '',
       type: type,
       ...(type === 'multiple_choice' ? {
-        options: [{ text: '', score: 0 }, { text: '', score: 0 }]
+        options: [{ text: '', score: 0, type: 'fixed' }, { text: '', score: 0, type: 'fixed' }]
       } : {
         textPlaceholder: 'Masukkan jawaban...'
       })
