@@ -1,0 +1,55 @@
+/* Form input styling to ensure black text color */
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"],
+input[type="date"],
+input[type="time"],
+input[type="tel"],
+input[type="search"],
+textarea,
+select {
+  color: #000000 !important;
+  background-color: #ffffff !important;
+}
+
+input[type="text"]::placeholder,
+input[type="number"]::placeholder,
+input[type="email"]::placeholder,
+input[type="password"]::placeholder,
+input[type="date"]::placeholder,
+input[type="time"]::placeholder,
+input[type="tel"]::placeholder,
+input[type="search"]::placeholder,
+textarea::placeholder,
+select::placeholder {
+  color: #6b7280 !important;
+}
+
+/* Ensure option elements also have black text */
+option {
+  color: #000000 !important;
+  background-color: #ffffff !important;
+}
+
+/* Override for dark mode */
+@media (prefers-color-scheme: dark) {
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="password"],
+  input[type="date"],
+  input[type="time"],
+  input[type="tel"],
+  input[type="search"],
+  textarea,
+  select {
+    color: #000000 !important;
+    background-color: #ffffff !important;
+  }
+  
+  option {
+    color: #000000 !important;
+    background-color: #ffffff !important;
+  }
+}
