@@ -13,6 +13,7 @@ interface Questionnaire {
     options?: {
       text: string;
       score: number;
+      type: 'fixed' | 'custom';
     }[];
     textPlaceholder?: string;
   }[];
@@ -93,6 +94,19 @@ function NewScreeningContent() {
   };
 
   const handleAnswer = (questionIndex: number, optionIndex?: number, score?: number, textAnswer?: string) => {
+    const newAnswers = [...answers];
+    const existingAnswerIndex = newAnswers.findIndex(a => a.questionIndex === questionIndex);
+    
+    if (existingAnswerIndex >= 0) {
+      newAnswers[existingAnswerIndex] = { questionIndex, optionIndex, score, textAnswer };
+    } else {
+      newAnswers.push({ questionIndex, optionIndex, score, textAnswer });
+    }
+    
+    setAnswers(newAnswers);
+  };
+
+  const handleCustomAnswer = (questionIndex: number, optionIndex: number, score: number, textAnswer: string) => {
     const newAnswers = [...answers];
     const existingAnswerIndex = newAnswers.findIndex(a => a.questionIndex === questionIndex);
     
@@ -312,16 +326,42 @@ function NewScreeningContent() {
           {question?.type === 'multiple_choice' && (
             <div className="space-y-2 sm:space-y-3">
               {question?.options?.map((option, index) => (
-                <label key={index} className="flex items-center p-3 sm:p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                  <input
-                    type="radio"
-                    name={`question-${currentQuestionIndex}`}
-                    checked={answers.find(a => a.questionIndex === currentQuestionIndex)?.optionIndex === index}
-                    onChange={() => handleAnswer(currentQuestionIndex, index, option.score)}
-                    className="mr-3 h-4 w-4 text-blue-600"
-                  />
-                  <span className="text-black">{option.text}</span>
-                </label>
+                <div key={index} className="space-y-2">
+                  {option.type === 'fixed' ? (
+                    <label className="flex items-center p-3 sm:p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                      <input
+                        type="radio"
+                        name={`question-${currentQuestionIndex}`}
+                        checked={answers.find(a => a.questionIndex === currentQuestionIndex)?.optionIndex === index}
+                        onChange={() => handleAnswer(currentQuestionIndex, index, option.score)}
+                        className="mr-3 h-4 w-4 text-blue-600"
+                      />
+                      <span className="text-black">{option.text}</span>
+                    </label>
+                  ) : (
+                    <div className="p-3 sm:p-4 border rounded-lg">
+                      <label className="flex items-center mb-2">
+                        <input
+                          type="radio"
+                          name={`question-${currentQuestionIndex}`}
+                          checked={answers.find(a => a.questionIndex === currentQuestionIndex)?.optionIndex === index}
+                          onChange={() => handleAnswer(currentQuestionIndex, index, option.score)}
+                          className="mr-3 h-4 w-4 text-blue-600"
+                        />
+                        <span className="text-black">{option.text}</span>
+                      </label>
+                      {answers.find(a => a.questionIndex === currentQuestionIndex)?.optionIndex === index && (
+                        <input
+                          type="text"
+                          placeholder="Masukkan jawaban Anda"
+                          value={answers.find(a => a.questionIndex === currentQuestionIndex)?.textAnswer || ''}
+                          onChange={(e) => handleCustomAnswer(currentQuestionIndex, index, option.score, e.target.value)}
+                          className="w-full mt-2 p-2 border rounded-md text-black"
+                        />
+                      )}
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           )}

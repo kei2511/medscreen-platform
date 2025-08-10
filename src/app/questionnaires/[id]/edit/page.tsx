@@ -10,6 +10,7 @@ interface Question {
   options?: {
     text: string;
     score: number;
+    type: 'fixed' | 'custom';
   }[];
   textPlaceholder?: string;
 }
@@ -99,7 +100,7 @@ export default function EditQuestionnaire() {
 
   const handleAddOption = (questionIndex: number) => {
     const newQuestions = [...questions];
-    newQuestions[questionIndex].options.push({ text: '', score: 0 });
+    newQuestions[questionIndex].options.push({ text: '', score: 0, type: 'fixed' });
     setQuestions(newQuestions);
   };
 
@@ -343,6 +344,14 @@ export default function EditQuestionnaire() {
                             placeholder="Skor"
                             min="0"
                           />
+                          <select
+                            value={option.type}
+                            onChange={(e) => handleOptionChange(qIndex, oIndex, 'type', e.target.value)}
+                            className="px-2 py-1 border border-gray-300 rounded-md text-sm"
+                          >
+                            <option value="fixed">Jawaban Tetap</option>
+                            <option value="custom">Isian Sendiri</option>
+                          </select>
                           <button
                             type="button"
                           onClick={() => handleRemoveOption(qIndex, oIndex)}
