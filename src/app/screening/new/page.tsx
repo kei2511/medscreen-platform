@@ -132,18 +132,28 @@ function NewScreeningContent() {
   };
 
   const handleSubmit = async () => {
-    if (!selectedQuestionnaire || !selectedPatient || answers.length !== selectedQuestionnaire.questions.length) {
-      alert('Harap jawab semua pertanyaan terlebih dahulu');
+    console.log('Submitting screening:', { selectedQuestionnaire, selectedPatient, answers });
+    
+    if (!selectedQuestionnaire || !selectedPatient) {
+      alert('Data tidak lengkap');
+      return;
+    }
+    
+    if (answers.length !== selectedQuestionnaire.questions.length) {
+      alert(`Harap jawab semua ${selectedQuestionnaire.questions.length} pertanyaan terlebih dahulu. Anda baru menjawab ${answers.length}.`);
       return;
     }
 
     const totalScore = answers.reduce((sum, answer) => sum + (answer.score || 0), 0);
+    console.log('Total score:', totalScore);
+    console.log('Result tiers:', selectedQuestionnaire.resultTiers);
+    
     const resultTier = selectedQuestionnaire.resultTiers.find(
       tier => totalScore >= tier.minScore && totalScore <= tier.maxScore
     );
 
     if (!resultTier) {
-      alert('Tidak ada tingkatan hasil yang sesuai');
+      alert(`Tidak ada tingkatan hasil yang sesuai untuk skor ${totalScore}. Pastikan tier sudah benar.`);
       return;
     }
 

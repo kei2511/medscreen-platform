@@ -167,7 +167,8 @@ export default function EditQuestionnaire() {
             ...(q.type === 'multiple_choice' ? {
               options: q.options?.map(opt => ({
                 text: opt.text,
-                score: Number(opt.score)
+                score: Number(opt.score),
+                type: opt.type || 'fixed'
               })) || []
             } : {
               textPlaceholder: q.textPlaceholder || 'Masukkan jawaban...'
@@ -345,8 +346,8 @@ export default function EditQuestionnaire() {
                             min="0"
                           />
                           <select
-                            value={option.type}
-                            onChange={(e) => handleOptionChange(qIndex, oIndex, 'type', e.target.value)}
+                            value={option.type || 'fixed'}
+                            onChange={(e) => handleOptionChange(qIndex, oIndex, 'type', String(e.target.value))}
                             className="px-2 py-1 border border-gray-300 rounded-md text-sm"
                           >
                             <option value="fixed">Jawaban Tetap</option>
