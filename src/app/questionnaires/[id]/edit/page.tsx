@@ -358,14 +358,6 @@ export default function EditQuestionnaire() {
                             className="flex-1 px-2 py-1 border border-gray-300 rounded-md text-sm"
                             placeholder="Teks jawaban..."
                           />
-                          <input
-                            type="number"
-                            value={option.score}
-                            onChange={(e) => handleOptionChange(qIndex, oIndex, 'score', e.target.value)}
-                            className="w-20 px-2 py-1 border border-gray-300 rounded-md text-sm"
-                            placeholder="Skor"
-                            min="0"
-                          />
                           <select
                             value={option.type || 'fixed'}
                             onChange={(e) => handleOptionChange(qIndex, oIndex, 'type', String(e.target.value))}
@@ -374,6 +366,14 @@ export default function EditQuestionnaire() {
                             <option value="fixed">Fixed</option>
                             <option value="custom">Custom</option>
                           </select>
+                          <input
+                            type="number"
+                            value={option.score}
+                            onChange={(e) => handleOptionChange(qIndex, oIndex, 'score', e.target.value)}
+                            className="w-20 px-2 py-1 border border-gray-300 rounded-md text-sm"
+                            placeholder="Skor"
+                            min="0"
+                          />
                           <button
                             type="button"
                           onClick={() => handleRemoveOption(qIndex, oIndex)}
