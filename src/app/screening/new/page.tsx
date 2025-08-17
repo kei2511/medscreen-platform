@@ -76,7 +76,22 @@ function NewScreeningContent() {
         const questionnairesData = await questionnairesRes.json();
         const patientsData = await patientsRes.json();
         
-        setQuestionnaires(questionnairesData);
+        // Normalisasi data untuk backward compatibility
+        const normalizedQuestionnaires = questionnairesData.map((q: any) => ({
+          ...q,
+          questions: (q.questions || []).map((question: any) => ({
+            text: question.text || '',
+            type: question.type || 'multiple_choice',
+            options: question.options ? question.options.map((opt: any) => ({
+              text: opt.text || '',
+              score: Number(opt.score) || 0,
+              type: opt.type || 'fixed'
+            })) : [],
+            textPlaceholder: question.textPlaceholder || 'Masukkan jawaban...'
+          }))
+        }));
+        
+        setQuestionnaires(normalizedQuestionnaires);
         setPatients(patientsData);
 
         if (patientId) {

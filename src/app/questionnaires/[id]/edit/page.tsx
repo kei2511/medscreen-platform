@@ -62,8 +62,29 @@ export default function EditQuestionnaire() {
         const data = await response.json();
         setQuestionnaire(data);
         setTitle(data.title);
-        setQuestions(data.questions);
-        setResultTiers(data.resultTiers);
+        
+        // Normalisasi data untuk backward compatibility
+        const normalizedQuestions = (data.questions || []).map((q: any) => {
+          const normalizedQuestion: Question = {
+            text: q.text || '',
+            type: q.type || 'multiple_choice',
+          };
+          
+          if (normalizedQuestion.type === 'multiple_choice') {
+            normalizedQuestion.options = (q.options || []).map((opt: any) => ({
+              text: opt.text || '',
+              score: Number(opt.score) || 0,
+              type: opt.type || 'fixed'
+            }));
+          } else {
+            normalizedQuestion.textPlaceholder = q.textPlaceholder || 'Masukkan jawaban...';
+          }
+          
+          return normalizedQuestion;
+        });
+        
+        setQuestions(normalizedQuestions);
+        setResultTiers(data.resultTiers || []);
       } else {
         router.push('/dashboard');
       }
