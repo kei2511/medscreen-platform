@@ -371,8 +371,8 @@ export default function EditQuestionnaire() {
                             onChange={(e) => handleOptionChange(qIndex, oIndex, 'type', String(e.target.value))}
                             className="px-2 py-1 border border-gray-300 rounded-md text-sm"
                           >
-                            <option value="fixed">Jawaban Tetap</option>
-                            <option value="custom">Isian Sendiri</option>
+                            <option value="fixed">Fixed</option>
+                            <option value="custom">Custom</option>
                           </select>
                           <button
                             type="button"
