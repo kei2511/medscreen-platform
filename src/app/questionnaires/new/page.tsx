@@ -7,7 +7,7 @@ import { getAuthToken } from '@/lib/auth';
 interface Question {
   id: string;
   text: string;
-  type: 'multiple_choice' | 'text_input';
+  type: 'multiple_choice' | 'multiple_selection' | 'text_input';
   options?: {
     id: string;
     text: string;
@@ -33,15 +33,16 @@ export default function NewQuestionnaire() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const addQuestion = (type: 'multiple_choice' | 'text_input' = 'multiple_choice') => {
+  const addQuestion = (type: 'multiple_choice' | 'multiple_selection' | 'text_input' = 'multiple_choice') => {
     const newQuestion: Question = {
       id: Date.now().toString(),
       text: '',
       type: type,
-      ...(type === 'multiple_choice' ? {
-        options: [{ id: Date.now().toString() + '1', text: '', score: 0, type: 'fixed' as const }]
+      ...((type === 'multiple_choice' || type === 'multiple_selection') ? {
+        options: [{ id: Date.now().toString(), text: '', score: 0, type: 'fixed' }]
       } : {
-        textPlaceholder: 'Masukkan jawaban...'
+        options: undefined,
+        textPlaceholder: ''
       })
     };
     setQuestions([...questions, newQuestion]);
@@ -238,14 +239,21 @@ export default function NewQuestionnaire() {
                 <button
                   type="button"
                   onClick={() => addQuestion('multiple_choice')}
-                  className="bg-blue-600 text-white px-3 py-1.5 rounded text-sm hover:bg-blue-700 transition-colors"
+                  className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
                 >
                   + Pilihan Ganda
                 </button>
                 <button
                   type="button"
+                  onClick={() => addQuestion('multiple_selection')}
+                  className="px-3 py-1 bg-purple-600 text-white text-sm rounded-md hover:bg-purple-700"
+                >
+                  + Pilihan Banyak
+                </button>
+                <button
+                  type="button"
                   onClick={() => addQuestion('text_input')}
-                  className="bg-green-600 text-white px-3 py-1.5 rounded text-sm hover:bg-green-700 transition-colors"
+                  className="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700"
                 >
                   + Isian Teks
                 </button>

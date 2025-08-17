@@ -9,7 +9,7 @@ interface Questionnaire {
   title: string;
   questions: {
     text: string;
-    type: 'multiple_choice' | 'text_input';
+    type: 'multiple_choice' | 'multiple_selection' | 'text_input';
     options?: {
       text: string;
       score: number;
@@ -40,6 +40,7 @@ function NewScreeningContent() {
   const [answers, setAnswers] = useState<{ 
     questionIndex: number; 
     optionIndex?: number; 
+    selectedOptions?: number[]; 
     score?: number; 
     textAnswer?: string 
   }[]>([]);
