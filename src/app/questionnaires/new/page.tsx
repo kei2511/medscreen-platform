@@ -12,6 +12,7 @@ interface Question {
     id: string;
     text: string;
     score: number;
+    type: 'fixed' | 'custom';
   }[];
   textPlaceholder?: string;
 }
@@ -38,7 +39,7 @@ export default function NewQuestionnaire() {
       text: '',
       type: type,
       ...(type === 'multiple_choice' ? {
-        options: [{ id: Date.now().toString() + '1', text: '', score: 0 }]
+        options: [{ id: Date.now().toString() + '1', text: '', score: 0, type: 'fixed' as const }]
       } : {
         textPlaceholder: 'Masukkan jawaban...'
       })
@@ -59,7 +60,7 @@ export default function NewQuestionnaire() {
           ...q,
           type: type,
           ...(type === 'multiple_choice' ? {
-            options: q.options || [{ id: Date.now().toString(), text: '', score: 0 }]
+            options: q.options || [{ id: Date.now().toString(), text: '', score: 0, type: 'fixed' as const }]
           } : {
             options: undefined,
             textPlaceholder: q.textPlaceholder || 'Masukkan jawaban...'
@@ -78,19 +79,19 @@ export default function NewQuestionnaire() {
   };
 
   const addOption = (questionId: string) => {
-    setQuestions(questions.map(q => 
+    setQuestions(questions.map(q =>
       q.id === questionId ? {
         ...q,
-        options: [...q.options, { id: Date.now().toString(), text: '', score: 0 }]
+        options: [...(q.options || []), { id: Date.now().toString(), text: '', score: 0, type: 'fixed' as const }]
       } : q
     ));
   };
 
-  const updateOption = (questionId: string, optionId: string, field: 'text' | 'score', value: string | number) => {
+  const updateOption = (questionId: string, optionId: string, field: 'text' | 'score' | 'type', value: string | number) => {
     setQuestions(questions.map(q => 
       q.id === questionId ? {
         ...q,
-        options: q.options.map(opt => 
+        options: q.options?.map(opt => 
           opt.id === optionId ? { ...opt, [field]: value } : opt
         )
       } : q
@@ -102,10 +103,10 @@ export default function NewQuestionnaire() {
   };
 
   const removeOption = (questionId: string, optionId: string) => {
-    setQuestions(questions.map(q => 
+    setQuestions(questions.map(q =>
       q.id === questionId ? {
         ...q,
-        options: q.options.filter(opt => opt.id !== optionId)
+        options: (q.options || []).filter(opt => opt.id !== optionId)
       } : q
     ));
   };
@@ -149,10 +150,11 @@ export default function NewQuestionnaire() {
             text: q.text,
             type: q.type,
             ...(q.type === 'multiple_choice' ? {
-              options: q.options?.map(opt => ({
+              options: (q.options || []).map(opt => ({
                 text: opt.text,
-                score: Number(opt.score)
-              })) || []
+                score: Number(opt.score),
+                type: opt.type
+              }))
             } : {
               textPlaceholder: q.textPlaceholder || 'Masukkan jawaban...'
             })
@@ -282,7 +284,6 @@ export default function NewQuestionnaire() {
                       <option value="text_input">Isian Teks</option>
                     </select>
                   </div>
-
                   {question.type === 'multiple_choice' ? (
                     <div className="space-y-2">
                       {question.options?.map((option, oIndex) => (
@@ -295,21 +296,29 @@ export default function NewQuestionnaire() {
                             placeholder={`Pilihan ${oIndex + 1}`}
                             required
                           />
+                          <select
+                            value={option.type}
+                            onChange={(e) => updateOption(question.id, option.id, 'type', e.target.value as 'fixed' | 'custom')}
+                            className="w-28 px-3 py-2 border border-gray-300 rounded-md text-sm sm:text-base"
+                          >
+                            <option value="fixed">Fixed</option>
+                            <option value="custom">Custom</option>
+                          </select>
                           <input
                             type="number"
                             value={option.score}
-                            onChange={(e) => updateOption(question.id, option.id, 'score', e.target.value)}
-                            className="w-full sm:w-20 px-3 py-2 border border-gray-300 rounded-md text-sm sm:text-base"
+                            onChange={(e) => updateOption(question.id, option.id, 'score', parseInt(e.target.value) || 0)}
+                            className="w-20 px-3 py-2 border border-gray-300 rounded-md text-sm sm:text-base"
                             placeholder="Skor"
-                            required
                             min="0"
+                            required
                           />
                           <button
                             type="button"
                             onClick={() => removeOption(question.id, option.id)}
-                            className="text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors w-full sm:w-auto"
+                            className="text-red-600 hover:text-red-800 text-xs sm:text-sm px-2 py-1 rounded hover:bg-red-50 transition-colors"
                           >
-                            ×
+                            Hapus
                           </button>
                         </div>
                       ))}
