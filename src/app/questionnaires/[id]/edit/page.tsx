@@ -70,7 +70,7 @@ export default function EditQuestionnaire() {
             type: q.type || 'multiple_choice',
           };
           
-          if (normalizedQuestion.type === 'multiple_choice') {
+          if (normalizedQuestion.type === 'multiple_choice' || normalizedQuestion.type === 'multiple_selection') {
             normalizedQuestion.options = (q.options || []).map((opt: any) => ({
               text: opt.text || '',
               score: Number(opt.score) || 0,
@@ -96,11 +96,11 @@ export default function EditQuestionnaire() {
     }
   };
 
-  const handleAddQuestion = (type: 'multiple_choice' | 'text_input' = 'multiple_choice') => {
+  const handleAddQuestion = (type: 'multiple_choice' | 'multiple_selection' | 'text_input' = 'multiple_choice') => {
     const newQuestion: Question = {
       text: '',
       type: type,
-      ...(type === 'multiple_choice' ? {
+      ...(type === 'multiple_choice' || type === 'multiple_selection' ? {
         options: [{ text: '', score: 0, type: 'fixed' }, { text: '', score: 0, type: 'fixed' }]
       } : {
         textPlaceholder: 'Masukkan jawaban...'
@@ -185,7 +185,7 @@ export default function EditQuestionnaire() {
           questions: questions.map(q => ({
             text: q.text,
             type: q.type,
-            ...(q.type === 'multiple_choice' ? {
+            ...(q.type === 'multiple_choice' || q.type === 'multiple_selection' ? {
               options: q.options?.map(opt => ({
                 text: opt.text,
                 score: Number(opt.score),
@@ -281,6 +281,13 @@ export default function EditQuestionnaire() {
                   </button>
                   <button
                     type="button"
+                    onClick={() => handleAddQuestion('multiple_selection')}
+                    className="px-3 py-1 bg-purple-600 text-white text-sm rounded-md hover:bg-purple-700"
+                  >
+                    + Multiple Selection
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => handleAddQuestion('text_input')}
                     className="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700"
                   >
@@ -315,13 +322,13 @@ export default function EditQuestionnaire() {
                     <select
                       value={question.type}
                       onChange={(e) => {
-                        const newType = e.target.value as 'multiple_choice' | 'text_input';
+                        const newType = e.target.value as 'multiple_choice' | 'multiple_selection' | 'text_input';
                         const updatedQuestions = [...questions];
                         updatedQuestions[qIndex] = {
                           ...updatedQuestions[qIndex],
                           type: newType,
-                          ...(newType === 'multiple_choice' ? {
-                            options: updatedQuestions[qIndex].options || [{ text: '', score: 0 }]
+                          ...(newType === 'multiple_choice' || newType === 'multiple_selection' ? {
+                            options: updatedQuestions[qIndex].options || [{ text: '', score: 0, type: 'fixed' as const }, { text: '', score: 0, type: 'fixed' as const }]
                           } : {
                             options: undefined,
                             textPlaceholder: updatedQuestions[qIndex].textPlaceholder || 'Masukkan jawaban...'
@@ -332,11 +339,12 @@ export default function EditQuestionnaire() {
                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                     >
                       <option value="multiple_choice">Pilihan Ganda</option>
+                      <option value="multiple_selection">Multiple Selection</option>
                       <option value="text_input">Isian Teks</option>
                     </select>
                   </div>
 
-                  {question.type === 'multiple_choice' ? (
+                  {(question.type === 'multiple_choice' || question.type === 'multiple_selection') ? (
                     <div className="space-y-2">
                       <div className="flex justify-between items-center">
                         <span className="text-sm font-medium text-black">Jawaban:</span>
