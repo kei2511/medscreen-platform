@@ -136,10 +136,13 @@ function NewScreeningContent() {
       
       const totalScore = scores.reduce((sum, s) => sum + s, 0);
       
+      const existingCustomAnswers = existingAnswerIndex >= 0 ? newAnswers[existingAnswerIndex].customAnswers : {};
+      const finalCustomAnswers = { ...existingCustomAnswers, ...customAnswers };
+      
       if (existingAnswerIndex >= 0) {
-        newAnswers[existingAnswerIndex] = { questionIndex, optionIndices, scores, score: totalScore, customAnswers };
+        newAnswers[existingAnswerIndex] = { questionIndex, optionIndices, scores, score: totalScore, customAnswers: finalCustomAnswers };
       } else {
-        newAnswers.push({ questionIndex, optionIndices, scores, score: totalScore, customAnswers });
+        newAnswers.push({ questionIndex, optionIndices, scores, score: totalScore, customAnswers: finalCustomAnswers });
       }
     } else {
       // Handle single selection (existing logic)
@@ -233,7 +236,8 @@ function NewScreeningContent() {
             optionIndices: a.optionIndices,
             scores: a.scores,
             score: a.score,
-            textAnswer: a.textAnswer
+            textAnswer: a.textAnswer,
+            customAnswers: a.customAnswers
           })),
           totalScore,
           resultLabel: resultTier.label,
