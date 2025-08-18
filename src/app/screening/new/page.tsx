@@ -31,20 +31,23 @@ interface Patient {
   age: number;
 }
 
+interface Answer {
+  questionIndex: number;
+  optionIndex?: number;
+  optionIndices?: number[];
+  score?: number;
+  scores?: number[];
+  textAnswer?: string;
+  customAnswers?: { [optionIndex: number]: string };
+}
+
 function NewScreeningContent() {
   const [questionnaires, setQuestionnaires] = useState<Questionnaire[]>([]);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [selectedQuestionnaire, setSelectedQuestionnaire] = useState<Questionnaire | null>(null);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<{ 
-    questionIndex: number; 
-    optionIndex?: number; 
-    optionIndices?: number[];
-    score?: number; 
-    scores?: number[];
-    textAnswer?: string 
-  }[]>([]);
+  const [answers, setAnswers] = useState<Answer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasStarted, setHasStarted] = useState(false);
   const router = useRouter();
@@ -110,7 +113,7 @@ function NewScreeningContent() {
     }
   };
 
-  const handleAnswer = (questionIndex: number, optionIndex?: number, score?: number, textAnswer?: string, isMultipleSelection = false) => {
+  const handleAnswer = (questionIndex: number, optionIndex?: number, score?: number, textAnswer?: string, isMultipleSelection = false, customAnswers?: { [optionIndex: number]: string }) => {
     const newAnswers = [...answers];
     const existingAnswerIndex = newAnswers.findIndex(a => a.questionIndex === questionIndex);
     
@@ -134,9 +137,9 @@ function NewScreeningContent() {
       const totalScore = scores.reduce((sum, s) => sum + s, 0);
       
       if (existingAnswerIndex >= 0) {
-        newAnswers[existingAnswerIndex] = { questionIndex, optionIndices, scores, score: totalScore };
+        newAnswers[existingAnswerIndex] = { questionIndex, optionIndices, scores, score: totalScore, customAnswers };
       } else {
-        newAnswers.push({ questionIndex, optionIndices, scores, score: totalScore });
+        newAnswers.push({ questionIndex, optionIndices, scores, score: totalScore, customAnswers });
       }
     } else {
       // Handle single selection (existing logic)
@@ -150,14 +153,26 @@ function NewScreeningContent() {
     setAnswers(newAnswers);
   };
 
-  const handleCustomAnswer = (questionIndex: number, optionIndex: number, score: number, textAnswer: string) => {
+  const handleCustomAnswer = (questionIndex: number, optionIndex: number, score: number, textAnswer: string, isMultipleSelection = false) => {
     const newAnswers = [...answers];
     const existingAnswerIndex = newAnswers.findIndex(a => a.questionIndex === questionIndex);
     
-    if (existingAnswerIndex >= 0) {
-      newAnswers[existingAnswerIndex] = { questionIndex, optionIndex, score, textAnswer };
+    if (isMultipleSelection) {
+      const existingAnswer = newAnswers[existingAnswerIndex];
+      const customAnswers = existingAnswer?.customAnswers || {};
+      customAnswers[optionIndex] = textAnswer;
+      
+      if (existingAnswerIndex >= 0) {
+        newAnswers[existingAnswerIndex] = { ...newAnswers[existingAnswerIndex], customAnswers };
+      } else {
+        newAnswers.push({ questionIndex, customAnswers });
+      }
     } else {
-      newAnswers.push({ questionIndex, optionIndex, score, textAnswer });
+      if (existingAnswerIndex >= 0) {
+        newAnswers[existingAnswerIndex] = { questionIndex, optionIndex, score, textAnswer };
+      } else {
+        newAnswers.push({ questionIndex, optionIndex, score, textAnswer });
+      }
     }
     
     setAnswers(newAnswers);
@@ -416,8 +431,8 @@ function NewScreeningContent() {
                         <input
                           type="text"
                           placeholder="Masukkan jawaban Anda"
-                          value={answers.find(a => a.questionIndex === currentQuestionIndex)?.textAnswer || ''}
-                          onChange={(e) => handleCustomAnswer(currentQuestionIndex, index, option.score, e.target.value)}
+                          value={answers.find(a => a.questionIndex === currentQuestionIndex)?.customAnswers?.[index] || ''}
+                          onChange={(e) => handleCustomAnswer(currentQuestionIndex, index, option.score, e.target.value, question?.type === 'multiple_selection')}
                           className="w-full mt-2 p-2 border rounded-md text-black"
                         />
                       )}
