@@ -200,8 +200,8 @@ export default function ScreeningResultPage() {
                             question.options?.[answer.optionIndex]?.text || 'Tidak dijawab' : 'Tidak dijawab'}</p>
                           {answer?.optionIndex !== undefined && 
                            question.options?.[answer.optionIndex]?.type === 'custom' &&
-                           answer?.customAnswers?.[answer.optionIndex] && (
-                            <p className="mt-1"><strong>Detail:</strong> {answer.customAnswers[answer.optionIndex]}</p>
+                           answer?.textAnswer && (
+                            <p className="mt-1"><strong>Detail:</strong> {answer.textAnswer}</p>
                           )}
                         </div>
                       ) : question.type === 'multiple_selection' ? (
