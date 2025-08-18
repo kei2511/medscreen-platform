@@ -34,6 +34,7 @@ interface ScreeningResult {
     score?: number;
     scores?: number[];
     textAnswer?: string;
+    customAnswers?: { [optionIndex: number]: string };
   }[];
 }
 
@@ -194,15 +195,28 @@ export default function ScreeningResultPage() {
                       {question.type === 'text_input' ? (
                         <p><strong>Jawaban:</strong> {answer?.textAnswer || 'Tidak dijawab'}</p>
                       ) : question.type === 'multiple_choice' ? (
-                        <p><strong>Jawaban:</strong> {answer?.optionIndex !== undefined ? 
-                          question.options?.[answer.optionIndex]?.text || 'Tidak dijawab' : 'Tidak dijawab'}</p>
+                        <div>
+                          <p><strong>Jawaban:</strong> {answer?.optionIndex !== undefined ? 
+                            question.options?.[answer.optionIndex]?.text || 'Tidak dijawab' : 'Tidak dijawab'}</p>
+                          {answer?.optionIndex !== undefined && 
+                           question.options?.[answer.optionIndex]?.type === 'custom' &&
+                           answer?.customAnswers?.[answer.optionIndex] && (
+                            <p className="mt-1"><strong>Detail:</strong> {answer.customAnswers[answer.optionIndex]}</p>
+                          )}
+                        </div>
                       ) : question.type === 'multiple_selection' ? (
                         <div>
                           <strong>Jawaban:</strong>
                           {answer?.optionIndices && answer.optionIndices.length > 0 ? (
                             <ul className="list-disc list-inside mt-1">
                               {answer.optionIndices.map((optIndex, i) => (
-                                <li key={i}>{question.options?.[optIndex]?.text || 'Pilihan tidak valid'}</li>
+                                <li key={i}>
+                                  {question.options?.[optIndex]?.text || 'Pilihan tidak valid'}
+                                  {question.options?.[optIndex]?.type === 'custom' &&
+                                   answer?.customAnswers?.[optIndex] && (
+                                    <span className="ml-1">({answer.customAnswers[optIndex]})</span>
+                                  )}
+                                </li>
                               ))}
                             </ul>
                           ) : (
