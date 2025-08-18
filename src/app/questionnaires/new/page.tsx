@@ -33,13 +33,13 @@ export default function NewQuestionnaire() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const addQuestion = (type: 'multiple_choice' | 'text_input' = 'multiple_choice') => {
+  const addQuestion = (type: 'multiple_choice' | 'multiple_selection' | 'text_input') => {
     const newQuestion: Question = {
       id: Date.now().toString(),
       text: '',
-      type: type,
-      ...(type === 'multiple_choice' ? {
-        options: [{ id: Date.now().toString() + '1', text: '', score: 0, type: 'fixed' as const }]
+      type,
+      ...(type === 'multiple_choice' || type === 'multiple_selection' ? {
+        options: [{ id: Date.now().toString(), text: '', score: 0, type: 'fixed' as const }]
       } : {
         textPlaceholder: 'Masukkan jawaban...'
       })
@@ -149,15 +149,12 @@ export default function NewQuestionnaire() {
           questions: questions.map(q => ({
             text: q.text,
             type: q.type,
-            ...(q.type === 'multiple_choice' || q.type === 'multiple_selection') ? {
-              options: (q.options || []).map(opt => ({
-                text: opt.text,
-                score: Number(opt.score),
-                type: opt.type
-              }))
-            } : {
-              textPlaceholder: q.textPlaceholder || 'Masukkan jawaban...'
-            })
+            options: (q.type === 'multiple_choice' || q.type === 'multiple_selection') ? (q.options || []).map(opt => ({
+              text: opt.text,
+              score: Number(opt.score),
+              type: opt.type
+            })) : undefined,
+            textPlaceholder: q.type === 'text_input' ? (q.textPlaceholder || 'Masukkan jawaban...') : undefined
           })),
           resultTiers: resultTiers.map(tier => ({
             minScore: Number(tier.minScore),
@@ -280,12 +277,14 @@ export default function NewQuestionnaire() {
                     placeholder="Tulis pertanyaan di sini"
                     required
                   />
-                  
                   <div className="mb-3">
                     <label className="block text-xs sm:text-sm font-medium text-black mb-1">Tipe Jawaban</label>
                     <select
                       value={question.type}
-                      onChange={(e) => updateQuestionType(question.id, e.target.value as 'multiple_choice' | 'multiple_selection' | 'text_input')}
+                      onChange={(e) => {
+                        const newType = e.target.value as 'multiple_choice' | 'multiple_selection' | 'text_input';
+                        updateQuestionType(question.id, newType);
+                      }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm sm:text-base"
                     >
                       <option value="multiple_choice">Pilihan Ganda</option>
@@ -293,39 +292,36 @@ export default function NewQuestionnaire() {
                       <option value="text_input">Isian Teks</option>
                     </select>
                   </div>
-                  {question.type === 'multiple_choice' ? (
+                  {(question.type === 'multiple_choice' || question.type === 'multiple_selection') ? (
                     <div className="space-y-2">
                       {question.options?.map((option, oIndex) => (
-                        <div key={option.id} className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+                        <div key={option.id} className="flex items-center space-x-2">
                           <input
                             type="text"
                             value={option.text}
                             onChange={(e) => updateOption(question.id, option.id, 'text', e.target.value)}
-                            className="flex-1 w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md text-sm sm:text-base"
-                            placeholder={`Pilihan ${oIndex + 1}`}
-                            required
+                            className="flex-1 px-2 py-1 border rounded text-sm"
+                            placeholder={`Opsi ${oIndex + 1}`}
                           />
-                          <select
-                            value={option.type}
-                            onChange={(e) => updateOption(question.id, option.id, 'type', e.target.value as 'fixed' | 'custom')}
-                            className="w-28 px-3 py-2 border border-gray-300 rounded-md text-sm sm:text-base"
-                          >
-                            <option value="fixed">Fixed</option>
-                            <option value="custom">Custom</option>
-                          </select>
                           <input
                             type="number"
                             value={option.score}
                             onChange={(e) => updateOption(question.id, option.id, 'score', parseInt(e.target.value) || 0)}
-                            className="w-20 px-3 py-2 border border-gray-300 rounded-md text-sm sm:text-base"
-                            placeholder="Skor"
-                            min="0"
-                            required
+                            className="w-20 px-2 py-1 border rounded text-sm"
+                            placeholder="Score"
                           />
+                          <select
+                            value={option.type}
+                            onChange={(e) => updateOption(question.id, option.id, 'type', e.target.value)}
+                            className="px-2 py-1 border rounded text-sm"
+                          >
+                            <option value="fixed">Fixed</option>
+                            <option value="custom">Custom</option>
+                          </select>
                           <button
                             type="button"
                             onClick={() => removeOption(question.id, option.id)}
-                            className="text-red-600 hover:text-red-800 text-xs sm:text-sm px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                            className="text-red-600 hover:text-red-800 text-sm px-2 py-1 rounded hover:bg-red-50 transition-colors"
                           >
                             Hapus
                           </button>
@@ -334,20 +330,20 @@ export default function NewQuestionnaire() {
                       <button
                         type="button"
                         onClick={() => addOption(question.id)}
-                        className="text-blue-600 hover:text-blue-800 text-xs sm:text-sm px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                        className="text-blue-600 hover:text-blue-800 text-sm px-2 py-1 rounded hover:bg-blue-50 transition-colors"
                       >
-                        + Tambah Pilihan
+                        + Tambah Opsi
                       </button>
                     </div>
                   ) : (
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-black mb-1">Placeholder Text</label>
+                      <label className="block text-xs sm:text-sm font-medium text-black mb-1">Placeholder</label>
                       <input
                         type="text"
                         value={question.textPlaceholder || ''}
                         onChange={(e) => updateTextPlaceholder(question.id, e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm sm:text-base"
-                        placeholder="Contoh: Masukkan jawaban Anda..."
+                        className="w-full px-3 py-2 border rounded-md text-sm sm:text-base"
+                        placeholder="Masukkan placeholder untuk jawaban..."
                       />
                     </div>
                   )}
