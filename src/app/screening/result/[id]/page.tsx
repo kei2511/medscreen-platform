@@ -17,8 +17,24 @@ interface ScreeningResult {
   };
   template: {
     title: string;
+    questions: {
+      text: string;
+      type: 'multiple_choice' | 'multiple_selection' | 'text_input';
+      options?: {
+        text: string;
+        score: number;
+        type: 'fixed' | 'custom';
+      }[];
+    }[];
   };
-  answers: any[];
+  answers: {
+    questionIndex: number;
+    optionIndex?: number;
+    optionIndices?: number[];
+    score?: number;
+    scores?: number[];
+    textAnswer?: string;
+  }[];
 }
 
 export default function ScreeningResultPage() {
@@ -161,6 +177,49 @@ export default function ScreeningResultPage() {
               Tonton video ini untuk mendapatkan panduan lengkap mengenai anjuran penanganan sesuai dengan hasil skrining pasien.
               Video ini berisi langkah-langkah yang direkomendasikan untuk tindak lanjut pasca-skrining.
             </p>
+          </div>
+
+          {/* Detailed Answers */}
+          <div className="mb-6 sm:mb-8">
+            <h3 className="text-base sm:text-lg font-semibold text-black mb-3 sm:mb-4">Jawaban yang Dipilih</h3>
+            <div className="space-y-3">
+              {result.template.questions.map((question, index) => {
+                const answer = result.answers.find(a => a.questionIndex === index);
+                return (
+                  <div key={index} className="border rounded-lg p-4">
+                    <h4 className="font-medium text-black mb-2">
+                      {index + 1}. {question.text}
+                    </h4>
+                    <div className="text-sm text-gray-700">
+                      {question.type === 'text_input' ? (
+                        <p><strong>Jawaban:</strong> {answer?.textAnswer || 'Tidak dijawab'}</p>
+                      ) : question.type === 'multiple_choice' ? (
+                        <p><strong>Jawaban:</strong> {answer?.optionIndex !== undefined ? 
+                          question.options?.[answer.optionIndex]?.text || 'Tidak dijawab' : 'Tidak dijawab'}</p>
+                      ) : question.type === 'multiple_selection' ? (
+                        <div>
+                          <strong>Jawaban:</strong>
+                          {answer?.optionIndices && answer.optionIndices.length > 0 ? (
+                            <ul className="list-disc list-inside mt-1">
+                              {answer.optionIndices.map((optIndex, i) => (
+                                <li key={i}>{question.options?.[optIndex]?.text || 'Pilihan tidak valid'}</li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <span> Tidak dijawab</span>
+                          )}
+                        </div>
+                      ) : (
+                        <p><strong>Jawaban:</strong> Tidak diketahui</p>
+                      )}
+                      {answer?.score !== undefined && (
+                        <p className="mt-1"><strong>Skor:</strong> {answer.score}</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* Actions */}
