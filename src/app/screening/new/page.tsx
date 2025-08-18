@@ -230,6 +230,8 @@ function NewScreeningContent() {
           answers: answers.map(a => ({
             questionIndex: a.questionIndex,
             optionIndex: a.optionIndex,
+            optionIndices: a.optionIndices,
+            scores: a.scores,
             score: a.score,
             textAnswer: a.textAnswer
           })),
