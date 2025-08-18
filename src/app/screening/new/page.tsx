@@ -433,8 +433,19 @@ function NewScreeningContent() {
                         <input
                           type="text"
                           placeholder="Masukkan jawaban Anda"
-                          value={answers.find(a => a.questionIndex === currentQuestionIndex)?.customAnswers?.[index] || ''}
-                          onChange={(e) => handleCustomAnswer(currentQuestionIndex, index, option.score, e.target.value, question?.type === 'multiple_selection')}
+                          value={question?.type === 'multiple_selection' 
+                            ? (answers.find(a => a.questionIndex === currentQuestionIndex)?.customAnswers?.[index] || '')
+                            : (answers.find(a => a.questionIndex === currentQuestionIndex)?.optionIndex === index 
+                                ? (answers.find(a => a.questionIndex === currentQuestionIndex)?.textAnswer || '')
+                                : '')
+                          }
+                          onChange={(e) => {
+                            if (question?.type === 'multiple_selection') {
+                              handleCustomAnswer(currentQuestionIndex, index, option.score, e.target.value, true);
+                            } else {
+                              handleCustomAnswer(currentQuestionIndex, index, option.score, e.target.value, false);
+                            }
+                          }}
                           className="w-full mt-2 p-2 border rounded-md text-black"
                         />
                       )}
