@@ -7,7 +7,7 @@ import { getAuthToken } from '@/lib/auth';
 interface Question {
   id: string;
   text: string;
-  type: 'multiple_choice' | 'text_input';
+  type: 'multiple_choice' | 'multiple_selection' | 'text_input';
   options?: {
     id: string;
     text: string;
@@ -53,13 +53,13 @@ export default function NewQuestionnaire() {
     ));
   };
 
-  const updateQuestionType = (questionId: string, type: 'multiple_choice' | 'text_input') => {
+  const updateQuestionType = (questionId: string, type: 'multiple_choice' | 'multiple_selection' | 'text_input') => {
     setQuestions(questions.map((q: Question) => {
       if (q.id === questionId) {
         const updatedQuestion: Question = {
           ...q,
           type: type,
-          ...(type === 'multiple_choice' ? {
+          ...(type === 'multiple_choice' || type === 'multiple_selection' ? {
             options: q.options || [{ id: Date.now().toString(), text: '', score: 0, type: 'fixed' as const }]
           } : {
             options: undefined,
@@ -149,7 +149,7 @@ export default function NewQuestionnaire() {
           questions: questions.map(q => ({
             text: q.text,
             type: q.type,
-            ...(q.type === 'multiple_choice' ? {
+            ...(q.type === 'multiple_choice' || q.type === 'multiple_selection') ? {
               options: (q.options || []).map(opt => ({
                 text: opt.text,
                 score: Number(opt.score),
@@ -172,10 +172,11 @@ export default function NewQuestionnaire() {
         router.push('/dashboard');
       } else {
         alert('Failed to create questionnaire');
+        setIsLoading(false);
       }
     } catch (error) {
       console.error('Error creating questionnaire:', error);
-    } finally {
+      alert('Gagal membuat kuesioner');
       setIsLoading(false);
     }
   };
@@ -244,6 +245,13 @@ export default function NewQuestionnaire() {
                 </button>
                 <button
                   type="button"
+                  onClick={() => addQuestion('multiple_selection')}
+                  className="bg-purple-600 text-white px-3 py-1.5 rounded text-sm hover:bg-purple-700 transition-colors"
+                >
+                  + Multiple Selection
+                </button>
+                <button
+                  type="button"
                   onClick={() => addQuestion('text_input')}
                   className="bg-green-600 text-white px-3 py-1.5 rounded text-sm hover:bg-green-700 transition-colors"
                 >
@@ -277,10 +285,11 @@ export default function NewQuestionnaire() {
                     <label className="block text-xs sm:text-sm font-medium text-black mb-1">Tipe Jawaban</label>
                     <select
                       value={question.type}
-                      onChange={(e) => updateQuestionType(question.id, e.target.value as 'multiple_choice' | 'text_input')}
+                      onChange={(e) => updateQuestionType(question.id, e.target.value as 'multiple_choice' | 'multiple_selection' | 'text_input')}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm sm:text-base"
                     >
                       <option value="multiple_choice">Pilihan Ganda</option>
+                      <option value="multiple_selection">Multiple Selection</option>
                       <option value="text_input">Isian Teks</option>
                     </select>
                   </div>

@@ -6,7 +6,7 @@ import { getAuthToken } from '@/lib/auth';
 
 interface Question {
   text: string;
-  type: 'multiple_choice' | 'text_input';
+  type: 'multiple_choice' | 'multiple_selection' | 'text_input';
   options?: {
     text: string;
     score: number;

@@ -9,7 +9,7 @@ interface Questionnaire {
   title: string;
   questions: {
     text: string;
-    type: 'multiple_choice' | 'text_input';
+    type: 'multiple_choice' | 'multiple_selection' | 'text_input';
     options?: {
       text: string;
       score: number;
@@ -40,7 +40,9 @@ function NewScreeningContent() {
   const [answers, setAnswers] = useState<{ 
     questionIndex: number; 
     optionIndex?: number; 
+    optionIndices?: number[];
     score?: number; 
+    scores?: number[];
     textAnswer?: string 
   }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -108,14 +110,41 @@ function NewScreeningContent() {
     }
   };
 
-  const handleAnswer = (questionIndex: number, optionIndex?: number, score?: number, textAnswer?: string) => {
+  const handleAnswer = (questionIndex: number, optionIndex?: number, score?: number, textAnswer?: string, isMultipleSelection = false) => {
     const newAnswers = [...answers];
     const existingAnswerIndex = newAnswers.findIndex(a => a.questionIndex === questionIndex);
     
-    if (existingAnswerIndex >= 0) {
-      newAnswers[existingAnswerIndex] = { questionIndex, optionIndex, score, textAnswer };
+    if (isMultipleSelection) {
+      // Handle multiple selection
+      const existingAnswer = newAnswers[existingAnswerIndex];
+      let optionIndices = existingAnswer?.optionIndices || [];
+      let scores = existingAnswer?.scores || [];
+      
+      if (optionIndex !== undefined && score !== undefined) {
+        const index = optionIndices.indexOf(optionIndex);
+        if (index > -1) {
+          optionIndices.splice(index, 1);
+          scores.splice(index, 1);
+        } else {
+          optionIndices.push(optionIndex);
+          scores.push(score);
+        }
+      }
+      
+      const totalScore = scores.reduce((sum, s) => sum + s, 0);
+      
+      if (existingAnswerIndex >= 0) {
+        newAnswers[existingAnswerIndex] = { questionIndex, optionIndices, scores, score: totalScore };
+      } else {
+        newAnswers.push({ questionIndex, optionIndices, scores, score: totalScore });
+      }
     } else {
-      newAnswers.push({ questionIndex, optionIndex, score, textAnswer });
+      // Handle single selection (existing logic)
+      if (existingAnswerIndex >= 0) {
+        newAnswers[existingAnswerIndex] = { questionIndex, optionIndex, score, textAnswer };
+      } else {
+        newAnswers.push({ questionIndex, optionIndex, score, textAnswer });
+      }
     }
     
     setAnswers(newAnswers);
@@ -348,17 +377,19 @@ function NewScreeningContent() {
         <div className="bg-white rounded-lg shadow p-4 sm:p-6">
           <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-black">{question?.text}</h2>
           
-          {question?.type === 'multiple_choice' && (
+          {(question?.type === 'multiple_choice' || question?.type === 'multiple_selection') && (
             <div className="space-y-2 sm:space-y-3">
               {question?.options?.map((option, index) => (
                 <div key={index} className="space-y-2">
                   {option.type === 'fixed' ? (
                     <label className="flex items-center p-3 sm:p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
                       <input
-                        type="radio"
-                        name={`question-${currentQuestionIndex}`}
-                        checked={answers.find(a => a.questionIndex === currentQuestionIndex)?.optionIndex === index}
-                        onChange={() => handleAnswer(currentQuestionIndex, index, option.score)}
+                        type={question?.type === 'multiple_selection' ? 'checkbox' : 'radio'}
+                        name={question?.type === 'multiple_selection' ? undefined : `question-${currentQuestionIndex}`}
+                        checked={question?.type === 'multiple_selection' 
+                          ? (answers.find(a => a.questionIndex === currentQuestionIndex)?.optionIndices || []).includes(index)
+                          : answers.find(a => a.questionIndex === currentQuestionIndex)?.optionIndex === index}
+                        onChange={() => handleAnswer(currentQuestionIndex, index, option.score, undefined, question?.type === 'multiple_selection')}
                         className="mr-3 h-4 w-4 text-blue-600"
                       />
                       <span className="text-black">{option.text}</span>
@@ -367,15 +398,21 @@ function NewScreeningContent() {
                     <div className="p-3 sm:p-4 border rounded-lg">
                       <label className="flex items-center mb-2">
                         <input
-                          type="radio"
-                          name={`question-${currentQuestionIndex}`}
-                          checked={answers.find(a => a.questionIndex === currentQuestionIndex)?.optionIndex === index}
-                          onChange={() => handleAnswer(currentQuestionIndex, index, option.score)}
+                          type={question?.type === 'multiple_selection' ? 'checkbox' : 'radio'}
+                          name={question?.type === 'multiple_selection' ? undefined : `question-${currentQuestionIndex}`}
+                          checked={question?.type === 'multiple_selection' 
+                            ? (answers.find(a => a.questionIndex === currentQuestionIndex)?.optionIndices || []).includes(index)
+                            : answers.find(a => a.questionIndex === currentQuestionIndex)?.optionIndex === index}
+                          onChange={() => handleAnswer(currentQuestionIndex, index, option.score, undefined, question?.type === 'multiple_selection')}
                           className="mr-3 h-4 w-4 text-blue-600"
                         />
                         <span className="text-black">{option.text}</span>
                       </label>
-                      {option.type === 'custom' && answers.find(a => a.questionIndex === currentQuestionIndex)?.optionIndex === index && (
+                      {option.type === 'custom' && (
+                        question?.type === 'multiple_selection' 
+                          ? (answers.find(a => a.questionIndex === currentQuestionIndex)?.optionIndices || []).includes(index)
+                          : answers.find(a => a.questionIndex === currentQuestionIndex)?.optionIndex === index
+                      ) && (
                         <input
                           type="text"
                           placeholder="Masukkan jawaban Anda"
