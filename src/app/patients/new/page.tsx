@@ -17,7 +17,6 @@ export default function AddPatientPage() {
     name: '',
     age: '',
     jenis_kelamin: '',
-    umur_pasien: '',
     lama_menderita_dm: '',
     penyakit_lain: '',
     caregiverId: ''
@@ -80,7 +79,6 @@ export default function AddPatientPage() {
         body: JSON.stringify({
           ...formData,
           jenis_kelamin: parseInt(formData.jenis_kelamin),
-          umur_pasien: parseInt(formData.umur_pasien),
           lama_menderita_dm: parseFloat(formData.lama_menderita_dm),
           caregiverId: formData.caregiverId || null
         })
@@ -97,7 +95,6 @@ export default function AddPatientPage() {
         name: '',
         age: '',
         jenis_kelamin: '',
-        umur_pasien: '',
         lama_menderita_dm: '',
         penyakit_lain: '',
         caregiverId: ''
@@ -202,38 +199,20 @@ export default function AddPatientPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Umur Pasien (tahun) (opsional)
-                </label>
-                <input
-                  type="number"
-                  name="umur_pasien"
-                  value={formData.umur_pasien}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Masukkan umur pasien"
-                  min="0"
-                  max="150"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Lama Menderita DM (tahun) (opsional)
-                </label>
-                <input
-                  type="number"
-                  name="lama_menderita_dm"
-                  value={formData.lama_menderita_dm}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Contoh: 3.5 untuk 3 tahun 6 bulan"
-                  step="0.1"
-                  min="0"
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Lama Menderita DM (tahun) (opsional)
+              </label>
+              <input
+                type="number"
+                name="lama_menderita_dm"
+                value={formData.lama_menderita_dm}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Contoh: 3.8 untuk 3 tahun 8 bulan"
+                step="0.1"
+                min="0"
+              />
             </div>
 
             <div>

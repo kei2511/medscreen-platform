@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
         name,
         age: parseInt(age),
         jenis_kelamin: jenis_kelamin ? parseInt(jenis_kelamin) : null,
-        umur_pasien: umur_pasien ? parseInt(umur_pasien) : null,
+        umur_pasien: parseInt(age), // Gunakan age sebagai umur_pasien
         lama_menderita_dm: lama_menderita_dm ? parseFloat(lama_menderita_dm) : null,
         penyakit_lain: penyakit_lain || null,
         caregiverId: caregiverId || null,
