@@ -28,20 +28,54 @@ export async function GET(
         doctorId: doctor.doctorId
       },
       include: {
-        caregiver: true,
-        results: {
-          include: {
-            template: {
-              select: {
-                title: true
-              }
-            }
-          },
-          orderBy: {
-            date: 'desc'
+        caregiver: true
+      }
+    });
+
+    if (!patient) {
+      return NextResponse.json(
+        { error: 'Patient not found' },
+        { status: 404 }
+      );
+    }
+
+    // Get all screening results for this patient (both patient and caregiver results)
+    const results = await prisma.screeningResult.findMany({
+      where: {
+        OR: [
+          { patientId: params.id },
+          { caregiver: { patients: { some: { id: params.id } } } }
+        ],
+        doctorId: doctor.doctorId
+      },
+      include: {
+        patient: {
+          select: {
+            id: true,
+            name: true
+          }
+        },
+        caregiver: {
+          select: {
+            id: true,
+            nama_keluarga: true,
+            hubungan_dengan_pasien: true
+          }
+        },
+        template: {
+          select: {
+            title: true
           }
         }
+      },
+      orderBy: {
+        date: 'desc'
       }
+    });
+
+    return NextResponse.json({
+      ...patient,
+      results
     });
 
     if (!patient) {

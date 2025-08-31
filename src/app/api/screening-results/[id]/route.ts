@@ -29,6 +29,7 @@ export async function GET(
       },
       include: {
         patient: true,
+        caregiver: true,
         template: true
       }
     });

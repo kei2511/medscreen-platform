@@ -10,10 +10,17 @@ interface ScreeningResult {
   resultLabel: string;
   recommendation?: string;
   date: string;
-  patient: {
+  patient?: {
     id: string;
     name: string;
     age: number;
+  };
+  caregiver?: {
+    id: string;
+    nama_keluarga: string;
+    jenis_kelamin: number;
+    umur_keluarga: number;
+    hubungan_dengan_pasien: string;
   };
   template: {
     title: string;
@@ -121,9 +128,14 @@ export default function ScreeningResultPage() {
           <div className="mb-4 sm:mb-6">
             <h2 className="text-xl sm:text-2xl font-bold text-black mb-2">{result.template.title}</h2>
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs sm:text-sm text-black">
-              <span>{result.patient.name}</span>
-              <span>•</span>
-              <span>{result.patient.age} tahun</span>
+              <span>
+                {result.patient 
+                  ? `${result.patient.name} (${result.patient.age} tahun)`
+                  : result.caregiver 
+                    ? `${result.caregiver.nama_keluarga} - ${result.caregiver.hubungan_dengan_pasien} (${result.caregiver.umur_keluarga} tahun)`
+                    : 'Responden tidak diketahui'
+                }
+              </span>
               <span>•</span>
               <span>{new Date(result.date).toLocaleDateString('id-ID')}</span>
             </div>

@@ -7,6 +7,8 @@ import { getAuthToken } from '@/lib/auth';
 interface Questionnaire {
   id: string;
   title: string;
+  description?: string;
+  jenis_kuesioner?: 'Pasien' | 'Caregiver' | 'Keduanya';
   questions: {
     text: string;
     type: 'multiple_choice' | 'multiple_selection' | 'text_input';
@@ -31,6 +33,14 @@ interface Patient {
   age: number;
 }
 
+interface Caregiver {
+  id: string;
+  nama_keluarga: string;
+  jenis_kelamin: number;
+  umur_keluarga: number;
+  hubungan_dengan_pasien: string;
+}
+
 interface Answer {
   questionIndex: number;
   optionIndex?: number;
@@ -44,8 +54,11 @@ interface Answer {
 function NewScreeningContent() {
   const [questionnaires, setQuestionnaires] = useState<Questionnaire[]>([]);
   const [patients, setPatients] = useState<Patient[]>([]);
+  const [caregivers, setCaregivers] = useState<Caregiver[]>([]);
   const [selectedQuestionnaire, setSelectedQuestionnaire] = useState<Questionnaire | null>(null);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [selectedCaregiver, setSelectedCaregiver] = useState<Caregiver | null>(null);
+  const [selectedRespondent, setSelectedRespondent] = useState<'patient' | 'caregiver' | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -72,14 +85,16 @@ function NewScreeningContent() {
         'Content-Type': 'application/json',
       };
 
-      const [questionnairesRes, patientsRes] = await Promise.all([
+      const [questionnairesRes, patientsRes, caregiversRes] = await Promise.all([
         fetch('/api/questionnaires', { headers }),
-        fetch('/api/patients', { headers })
+        fetch('/api/patients', { headers }),
+        fetch('/api/caregivers', { headers })
       ]);
 
-      if (questionnairesRes.ok && patientsRes.ok) {
+      if (questionnairesRes.ok && patientsRes.ok && caregiversRes.ok) {
         const questionnairesData = await questionnairesRes.json();
         const patientsData = await patientsRes.json();
+        const caregiversData = await caregiversRes.json();
         
         // Normalisasi data untuk backward compatibility
         const normalizedQuestionnaires = questionnairesData.map((q: any) => ({
@@ -98,10 +113,14 @@ function NewScreeningContent() {
         
         setQuestionnaires(normalizedQuestionnaires);
         setPatients(patientsData);
+        setCaregivers(caregiversData);
 
         if (patientId) {
           const patient = patientsData.find((p: Patient) => p.id === patientId);
-          if (patient) setSelectedPatient(patient);
+          if (patient) {
+            setSelectedPatient(patient);
+            setSelectedRespondent('patient');
+          }
         }
       } else {
         throw new Error('Failed to fetch data');
@@ -193,10 +212,39 @@ function NewScreeningContent() {
     }
   };
 
-  const handleSubmit = async () => {
-    console.log('Submitting screening:', { selectedQuestionnaire, selectedPatient, answers });
+  // Fungsi untuk memfilter kuesioner berdasarkan responden
+  const getFilteredQuestionnaires = () => {
+    if (!selectedRespondent) return questionnaires;
     
-    if (!selectedQuestionnaire || !selectedPatient) {
+    return questionnaires.filter(q => {
+      const jenis = q.jenis_kuesioner || 'Pasien';
+      if (selectedRespondent === 'patient') {
+        return jenis === 'Pasien' || jenis === 'Keduanya';
+      } else if (selectedRespondent === 'caregiver') {
+        return jenis === 'Caregiver' || jenis === 'Keduanya';
+      }
+      return true;
+    });
+  };
+
+  // Fungsi untuk memfilter responden berdasarkan kuesioner
+  const getFilteredRespondents = () => {
+    if (!selectedQuestionnaire) return { patients: [], caregivers: [] };
+    
+    const jenis = selectedQuestionnaire.jenis_kuesioner || 'Pasien';
+    if (jenis === 'Pasien') {
+      return { patients, caregivers: [] };
+    } else if (jenis === 'Caregiver') {
+      return { patients: [], caregivers };
+    } else {
+      return { patients, caregivers };
+    }
+  };
+
+  const handleSubmit = async () => {
+    console.log('Submitting screening:', { selectedQuestionnaire, selectedPatient, selectedCaregiver, answers });
+    
+    if (!selectedQuestionnaire || (!selectedPatient && !selectedCaregiver)) {
       alert('Data tidak lengkap');
       return;
     }
@@ -228,7 +276,8 @@ function NewScreeningContent() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          patientId: selectedPatient.id,
+          patientId: selectedPatient?.id || null,
+          caregiverId: selectedCaregiver?.id || null,
           templateId: selectedQuestionnaire.id,
           answers: answers.map(a => ({
             questionIndex: a.questionIndex,
@@ -289,56 +338,114 @@ function NewScreeningContent() {
             <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-black">Pilih Kuesioner dan Pasien</h2>
             
             <div className="space-y-4 sm:space-y-6">
+              {/* Pilih Responden Terlebih Dahulu */}
               <div>
                 <label className="block text-xs sm:text-sm font-medium text-black mb-2">
-                  Pilih Kuesioner
+                  Pilih Responden *
                 </label>
                 <select
+                  value={selectedRespondent || ''}
+                  onChange={(e) => {
+                    const respondent = e.target.value as 'patient' | 'caregiver' | '';
+                    setSelectedRespondent(respondent || null);
+                    setSelectedPatient(null);
+                    setSelectedCaregiver(null);
+                    setSelectedQuestionnaire(null);
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                >
+                  <option value="">Pilih responden...</option>
+                  <option value="patient">Pasien</option>
+                  <option value="caregiver">Caregiver</option>
+                </select>
+              </div>
+
+              {/* Pilih Kuesioner */}
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-black mb-2">
+                  Pilih Kuesioner *
+                </label>
+                <select
+                  value={selectedQuestionnaire?.id || ''}
                   onChange={(e) => {
                     const questionnaire = questionnaires.find(q => q.id === e.target.value);
                     setSelectedQuestionnaire(questionnaire || null);
+                    // Reset responden jika kuesioner berubah
+                    setSelectedPatient(null);
+                    setSelectedCaregiver(null);
+                    setSelectedRespondent(null);
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                 >
                   <option value="">Pilih kuesioner...</option>
-                  {questionnaires.map(q => (
-                    <option key={q.id} value={q.id}>{q.title}</option>
+                  {getFilteredQuestionnaires().map(q => (
+                    <option key={q.id} value={q.id}>
+                      {q.title} ({q.jenis_kuesioner || 'Pasien'})
+                    </option>
                   ))}
                 </select>
               </div>
 
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-black mb-2">
-                  Pilih Pasien
-                </label>
-                <select
-                  onChange={(e) => {
-                    const patient = patients.find(p => p.id === e.target.value);
-                    setSelectedPatient(patient || null);
-                  }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                >
-                  <option value="">Pilih pasien...</option>
-                  {patients.map(p => (
-                    <option key={p.id} value={p.id}>{p.name} - {p.age} tahun</option>
-                  ))}
-                </select>
-              </div>
+              {/* Pilih Pasien (jika responden = patient atau kuesioner = Pasien/Keduanya) */}
+              {(selectedRespondent === 'patient' || (selectedQuestionnaire && (selectedQuestionnaire.jenis_kuesioner === 'Pasien' || selectedQuestionnaire.jenis_kuesioner === 'Keduanya'))) && (
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-black mb-2">
+                    Pilih Pasien *
+                  </label>
+                  <select
+                    value={selectedPatient?.id || ''}
+                    onChange={(e) => {
+                      const patient = patients.find(p => p.id === e.target.value);
+                      setSelectedPatient(patient || null);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                  >
+                    <option value="">Pilih pasien...</option>
+                    {patients.map(p => (
+                      <option key={p.id} value={p.id}>{p.name} - {p.age} tahun</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Pilih Caregiver (jika responden = caregiver atau kuesioner = Caregiver/Keduanya) */}
+              {(selectedRespondent === 'caregiver' || (selectedQuestionnaire && (selectedQuestionnaire.jenis_kuesioner === 'Caregiver' || selectedQuestionnaire.jenis_kuesioner === 'Keduanya'))) && (
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-black mb-2">
+                    Pilih Caregiver *
+                  </label>
+                  <select
+                    value={selectedCaregiver?.id || ''}
+                    onChange={(e) => {
+                      const caregiver = caregivers.find(c => c.id === e.target.value);
+                      setSelectedCaregiver(caregiver || null);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                  >
+                    <option value="">Pilih caregiver...</option>
+                    {caregivers.map(c => (
+                      <option key={c.id} value={c.id}>
+                        {c.nama_keluarga} - {c.hubungan_dengan_pasien} ({c.umur_keluarga} tahun)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {/* Tombol Konfirmasi/Mulai */}
               <div className="pt-4 border-t">
                 <button
                   onClick={() => {
-                    if (selectedQuestionnaire && selectedPatient) {
+                    if (selectedQuestionnaire && (selectedPatient || selectedCaregiver)) {
                       setHasStarted(true);
                     }
                   }}
-                  disabled={!selectedQuestionnaire || !selectedPatient}
+                  disabled={!selectedQuestionnaire || (!selectedPatient && !selectedCaregiver)}
                   className="w-full bg-green-600 text-white px-4 py-3 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-sm sm:text-base"
                 >
-                  {selectedQuestionnaire && selectedPatient 
-                    ? `Mulai Skrining - ${selectedQuestionnaire.title} untuk ${selectedPatient.name}`
-                    : 'Pilih kuesioner dan pasien terlebih dahulu'
+                  {selectedQuestionnaire && (selectedPatient || selectedCaregiver)
+                    ? `Mulai Skrining - ${selectedQuestionnaire.title} untuk ${selectedPatient?.name || selectedCaregiver?.nama_keluarga}`
+                    : 'Pilih kuesioner dan responden terlebih dahulu'
                   }
                 </button>
               </div>
@@ -363,7 +470,14 @@ function NewScreeningContent() {
           <div className="flex justify-between items-center h-14 sm:h-16">
             <div>
               <h1 className="text-base sm:text-lg font-semibold text-black">{selectedQuestionnaire?.title}</h1>
-              <p className="text-xs sm:text-sm text-black">{selectedPatient?.name} ({selectedPatient?.age} tahun)</p>
+              <p className="text-xs sm:text-sm text-black">
+                {selectedPatient 
+                  ? `${selectedPatient.name} (${selectedPatient.age} tahun)`
+                  : selectedCaregiver 
+                    ? `${selectedCaregiver.nama_keluarga} - ${selectedCaregiver.hubungan_dengan_pasien} (${selectedCaregiver.umur_keluarga} tahun)`
+                    : ''
+                }
+              </p>
             </div>
             <button
               onClick={() => {

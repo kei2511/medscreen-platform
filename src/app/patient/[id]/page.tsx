@@ -27,6 +27,15 @@ interface ScreeningResult {
   totalScore: number;
   resultLabel: string;
   date: string;
+  patient?: {
+    id: string;
+    name: string;
+  };
+  caregiver?: {
+    id: string;
+    nama_keluarga: string;
+    hubungan_dengan_pasien: string;
+  };
   template: {
     title: string;
   };
@@ -321,7 +330,10 @@ export default function PatientDetail() {
                     <div className="flex-1 min-w-0">
                       <h3 className="text-sm font-medium text-gray-900 truncate">{result.template.title}</h3>
                       <p className="text-xs text-gray-500">
-                        {new Date(result.date).toLocaleDateString('id-ID', {
+                        {result.caregiver 
+                          ? `Oleh: ${result.caregiver.nama_keluarga} (${result.caregiver.hubungan_dengan_pasien})`
+                          : 'Oleh: Pasien'
+                        } • {new Date(result.date).toLocaleDateString('id-ID', {
                           day: 'numeric',
                           month: 'long',
                           year: 'numeric',
