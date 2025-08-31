@@ -21,6 +21,7 @@ export default function CaregiversPage() {
   const [caregivers, setCaregivers] = useState<Caregiver[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -69,10 +70,17 @@ export default function CaregiversPage() {
         }
       });
 
+      const data = await response.json();
+
       if (response.ok) {
         setCaregivers(prev => prev.filter(c => c.id !== caregiverId));
+        setSuccess('Caregiver berhasil dihapus');
       } else {
-        setError('Gagal menghapus caregiver');
+        if (data.error && data.error.includes('pasien terkait')) {
+          setError(`Tidak dapat menghapus caregiver: ${data.error}`);
+        } else {
+          setError(data.error || 'Gagal menghapus caregiver');
+        }
       }
     } catch (error) {
       console.error('Error deleting caregiver:', error);
@@ -122,6 +130,12 @@ export default function CaregiversPage() {
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
             {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md text-green-700 text-sm">
+            {success}
           </div>
         )}
 
