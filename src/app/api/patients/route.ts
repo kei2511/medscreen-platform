@@ -65,9 +65,9 @@ export async function POST(request: NextRequest) {
     } = await request.json();
 
     // Validasi field wajib
-    if (!name || !age || jenis_kelamin === undefined || !umur_pasien || lama_menderita_dm === undefined) {
+    if (!name || !age) {
       return NextResponse.json(
-        { error: 'Nama, umur, jenis kelamin, umur pasien, dan lama menderita DM wajib diisi' },
+        { error: 'Nama dan umur wajib diisi' },
         { status: 400 }
       );
     }
@@ -117,9 +117,9 @@ export async function POST(request: NextRequest) {
       data: {
         name,
         age: parseInt(age),
-        jenis_kelamin,
-        umur_pasien,
-        lama_menderita_dm: parseFloat(lama_menderita_dm),
+        jenis_kelamin: jenis_kelamin ? parseInt(jenis_kelamin) : null,
+        umur_pasien: umur_pasien ? parseInt(umur_pasien) : null,
+        lama_menderita_dm: lama_menderita_dm ? parseFloat(lama_menderita_dm) : null,
         penyakit_lain: penyakit_lain || null,
         caregiverId: caregiverId || null,
         doctorId: doctor.doctorId

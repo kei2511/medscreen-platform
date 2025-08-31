@@ -205,7 +205,7 @@ export default function AddPatientPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Umur Pasien (tahun) *
+                  Umur Pasien (tahun) (opsional)
                 </label>
                 <input
                   type="number"
@@ -216,13 +216,12 @@ export default function AddPatientPage() {
                   placeholder="Masukkan umur pasien"
                   min="0"
                   max="150"
-                  required
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Lama Menderita DM (tahun) *
+                  Lama Menderita DM (tahun) (opsional)
                 </label>
                 <input
                   type="number"
@@ -233,7 +232,6 @@ export default function AddPatientPage() {
                   placeholder="Contoh: 3.5 untuk 3 tahun 6 bulan"
                   step="0.1"
                   min="0"
-                  required
                 />
               </div>
             </div>

@@ -54,9 +54,9 @@ model Patient {
   id                String    @id @default(cuid())
   name              String
   age               Int
-  jenis_kelamin     Int       // 1=Laki-laki, 0=Perempuan
-  umur_pasien       Int
-  lama_menderita_dm Float     // e.g., 3.3 for 3 years 3 months
+  jenis_kelamin     Int?      // 1=Laki-laki, 0=Perempuan (optional untuk backward compatibility)
+  umur_pasien       Int?      // optional untuk backward compatibility
+  lama_menderita_dm Float?    // e.g., 3.3 for 3 years 3 months (optional untuk backward compatibility)
   penyakit_lain     String?
   doctor            Doctor    @relation(fields: [doctorId], references: [id])
   doctorId          String
