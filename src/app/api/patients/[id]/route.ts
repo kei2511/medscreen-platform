@@ -28,6 +28,7 @@ export async function GET(
         doctorId: doctor.doctorId
       },
       include: {
+        caregiver: true,
         results: {
           include: {
             template: {

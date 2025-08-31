@@ -224,12 +224,26 @@ export default function Dashboard() {
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex justify-between items-center">
                 <h2 className="text-lg font-semibold text-black">Manajemen Pasien</h2>
-                <button
-                  onClick={() => setShowAddPatient(true)}
-                  className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
-                >
-                  Tambah Pasien
-                </button>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => router.push('/caregivers')}
+                    className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
+                  >
+                    Lihat Caregiver
+                  </button>
+                  <button
+                    onClick={() => router.push('/caregivers/new')}
+                    className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
+                  >
+                    Tambah Caregiver
+                  </button>
+                  <button
+                    onClick={() => router.push('/patients/new')}
+                    className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
+                  >
+                    Tambah Pasien
+                  </button>
+                </div>
               </div>
             </div>
             <div className="p-6">

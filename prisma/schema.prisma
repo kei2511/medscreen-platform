@@ -9,8 +9,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 // Model untuk Dokter/Pengguna
@@ -20,22 +20,51 @@ model Doctor {
   password    String // Password akan di-hash sebelum disimpan
   name        String?
   patients    Patient[]
+  caregivers  Caregiver[]
   templates   QuestionnaireTemplate[]
   results     ScreeningResult[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
+// Model untuk Caregiver/Keluarga
+model Caregiver {
+  id                    String   @id @default(cuid())
+  nama_keluarga         String
+  jenis_kelamin         Int      // 1=Laki-laki, 0=Perempuan
+  umur_keluarga         Int
+  hubungan_dengan_pasien HubunganDenganPasien
+  doctor                Doctor   @relation(fields: [doctorId], references: [id])
+  doctorId              String
+  patients              Patient[]
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+// Enum untuk hubungan dengan pasien
+enum HubunganDenganPasien {
+  Anak
+  OrangTua
+  SaudaraKandung
+  Lainnya
+}
+
 // Model untuk Pasien
 model Patient {
-  id          String   @id @default(cuid())
-  name        String
-  age         Int
-  doctor      Doctor   @relation(fields: [doctorId], references: [id])
-  doctorId    String
-  results     ScreeningResult[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                String    @id @default(cuid())
+  name              String
+  age               Int
+  jenis_kelamin     Int       // 1=Laki-laki, 0=Perempuan
+  umur_pasien       Int
+  lama_menderita_dm Float     // e.g., 3.3 for 3 years 3 months
+  penyakit_lain     String?
+  doctor            Doctor    @relation(fields: [doctorId], references: [id])
+  doctorId          String
+  caregiver         Caregiver? @relation(fields: [caregiverId], references: [id])
+  caregiverId       String?
+  results           ScreeningResult[]
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 }
 
 // Model untuk Template Kuesioner

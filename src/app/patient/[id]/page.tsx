@@ -8,6 +8,17 @@ interface Patient {
   id: string;
   name: string;
   age: number;
+  jenis_kelamin: number;
+  umur_pasien: number;
+  lama_menderita_dm: number;
+  penyakit_lain?: string;
+  caregiver?: {
+    id: string;
+    nama_keluarga: string;
+    jenis_kelamin: number;
+    umur_keluarga: number;
+    hubungan_dengan_pasien: string;
+  };
   results: ScreeningResult[];
 }
 
@@ -167,7 +178,19 @@ export default function PatientDetail() {
           <div className="flex flex-col sm:flex-row justify-between items-start gap-3 py-4">
             <div>
               <h1 className="text-lg sm:text-xl font-semibold text-black">Riwayat Skrining</h1>
-              <p className="text-sm text-black">{patient.name} - {patient.age} tahun</p>
+              <p className="text-sm text-black">
+                {patient.name} - {patient.age} tahun
+                {patient.jenis_kelamin !== undefined && (
+                  <span className="ml-2">
+                    ({patient.jenis_kelamin === 1 ? 'Laki-laki' : 'Perempuan'})
+                  </span>
+                )}
+              </p>
+              {patient.caregiver && (
+                <p className="text-xs text-gray-600">
+                  Caregiver: {patient.caregiver.nama_keluarga} ({patient.caregiver.hubungan_dengan_pasien})
+                </p>
+              )}
             </div>
             <div className="flex gap-2 w-full sm:w-auto">
               <button

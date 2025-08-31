@@ -23,7 +23,11 @@ export async function GET(request: NextRequest) {
     const results = await prisma.screeningResult.findMany({
       where: { doctorId: doctor.doctorId },
       include: {
-        patient: true,
+        patient: {
+          include: {
+            caregiver: true
+          }
+        },
         template: true
       },
       orderBy: {
@@ -36,13 +40,19 @@ export async function GET(request: NextRequest) {
     
     // Prepare data for Excel
     const excelData = [
-      ['Nama Pasien', 'Umur Pasien', 'Tanggal Skrining', 'Nama Kuesioner', 'Total Skor', 'Label Hasil']
+      ['Nama Pasien', 'Umur Pasien', 'Jenis Kelamin', 'Umur Pasien (Detail)', 'Lama Menderita DM', 'Penyakit Lain', 'Caregiver', 'Hubungan Caregiver', 'Tanggal Skrining', 'Nama Kuesioner', 'Total Skor', 'Label Hasil']
     ];
 
     results.forEach(result => {
       excelData.push([
         result.patient.name,
         result.patient.age.toString(),
+        result.patient.jenis_kelamin === 1 ? 'Laki-laki' : 'Perempuan',
+        result.patient.umur_pasien.toString(),
+        result.patient.lama_menderita_dm.toString(),
+        result.patient.penyakit_lain || '-',
+        result.patient.caregiver?.nama_keluarga || '-',
+        result.patient.caregiver?.hubungan_dengan_pasien || '-',
         new Date(result.date).toLocaleDateString('id-ID', {
           day: '2-digit',
           month: '2-digit',
