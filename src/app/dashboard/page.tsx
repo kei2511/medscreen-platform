@@ -16,6 +16,7 @@ interface Questionnaire {
   id: string;
   title: string;
   description?: string;
+  jenis_kuesioner?: 'Pasien' | 'Caregiver' | 'Keduanya';
   questions: any[];
   resultTiers: any[];
   createdAt: string;
@@ -327,9 +328,14 @@ export default function Dashboard() {
                   {questionnaires.map((questionnaire) => (
                     <div key={questionnaire.id} className="border rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
                       <h3 className="font-semibold text-black text-sm sm:text-base">{questionnaire.title}</h3>
-                      <p className="text-xs sm:text-sm text-black mt-1">
-                        {questionnaire.questions.length} pertanyaan
-                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs sm:text-sm text-black">
+                          {questionnaire.questions.length} pertanyaan
+                        </span>
+                        <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                          {questionnaire.jenis_kuesioner || 'Pasien'}
+                        </span>
+                      </div>
                       <div className="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-2 mt-2">
                         <button
                           onClick={() => router.push(`/questionnaires/${questionnaire.id}/edit`)}

@@ -25,6 +25,8 @@ interface ResultTier {
 interface Questionnaire {
   id: string;
   title: string;
+  description?: string;
+  jenis_kuesioner?: 'Pasien' | 'Caregiver' | 'Keduanya';
   questions: Question[];
   resultTiers: ResultTier[];
 }
@@ -32,6 +34,8 @@ interface Questionnaire {
 export default function EditQuestionnaire() {
   const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(null);
   const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [jenisKuesioner, setJenisKuesioner] = useState<'Pasien' | 'Caregiver' | 'Keduanya'>('Pasien');
   const [questions, setQuestions] = useState<Question[]>([]);
   const [resultTiers, setResultTiers] = useState<ResultTier[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -62,6 +66,8 @@ export default function EditQuestionnaire() {
         const data = await response.json();
         setQuestionnaire(data);
         setTitle(data.title);
+        setDescription(data.description || '');
+        setJenisKuesioner(data.jenis_kuesioner || 'Pasien');
         
         // Normalisasi data untuk backward compatibility
         const normalizedQuestions = (data.questions || []).map((q: any) => {
@@ -182,6 +188,8 @@ export default function EditQuestionnaire() {
         },
         body: JSON.stringify({
           title,
+          description,
+          jenis_kuesioner: jenisKuesioner,
           questions: questions.map(q => ({
             text: q.text,
             type: q.type,
@@ -265,6 +273,36 @@ export default function EditQuestionnaire() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Masukkan judul kuesioner..."
               />
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="block text-sm font-medium text-black mb-2">
+                Deskripsi (Opsional)
+              </label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                rows={3}
+                placeholder="Jelaskan tujuan dan konteks penggunaan kuesioner ini"
+              />
+            </div>
+
+            {/* Jenis Kuesioner */}
+            <div>
+              <label className="block text-sm font-medium text-black mb-2">
+                Jenis Kuesioner
+              </label>
+              <select
+                value={jenisKuesioner}
+                onChange={(e) => setJenisKuesioner(e.target.value as 'Pasien' | 'Caregiver' | 'Keduanya')}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="Pasien">Untuk Pasien</option>
+                <option value="Caregiver">Untuk Caregiver</option>
+                <option value="Keduanya">Untuk Pasien dan Caregiver</option>
+              </select>
             </div>
 
             {/* Questions */}

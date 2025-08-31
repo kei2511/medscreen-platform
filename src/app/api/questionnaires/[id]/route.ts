@@ -23,10 +23,10 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { title, questions, resultTiers } = body;
+    const { title, description, jenis_kuesioner, questions, resultTiers } = body;
 
     // Validate input
-    if (!title || !Array.isArray(questions) || !Array.isArray(resultTiers)) {
+    if (!title || !Array.isArray(questions) || !Array.isArray(resultTiers) || !jenis_kuesioner) {
       return NextResponse.json(
         { error: 'Invalid input data' },
         { status: 400 }
@@ -53,6 +53,8 @@ export async function PUT(
       where: { id: params.id },
       data: {
         title,
+        description,
+        jenis_kuesioner,
         questions: questions as any,
         resultTiers: resultTiers as any,
       },

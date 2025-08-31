@@ -1,0 +1,5 @@
+[33m81797fe[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mtesting[m[33m)[m feat: add edit and delete caregiver functionality
+[33m023e86b[m fix: remove duplicate age field from patient form
+[33m9caf73e[m fix: make new patient fields optional for backward compatibility
+[33md119332[m fix: add database setup API and update build script for Vercel
+[33m677a997[m feat: add database setup and connection test API
