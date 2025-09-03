@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
             caregiver: true
           }
         },
+        caregiver: true,
         template: true
       },
       orderBy: {
@@ -40,24 +41,40 @@ export async function GET(request: NextRequest) {
     
     // Prepare data for Excel
     const excelData = [
-      ['Nama Pasien', 'Umur Pasien', 'Jenis Kelamin', 'Umur Pasien (Detail)', 'Lama Menderita DM', 'Penyakit Lain', 'Caregiver', 'Hubungan Caregiver', 'Tanggal Skrining', 'Nama Kuesioner', 'Total Skor', 'Label Hasil']
+      ['Responden', 'Umur', 'Jenis Kelamin', 'Umur Pasien (Detail)', 'Lama Menderita DM', 'Penyakit Lain', 'Caregiver', 'Hubungan Caregiver', 'Tanggal Skrining', 'Nama Kuesioner', 'Total Skor', 'Label Hasil']
     ];
 
     results.forEach(result => {
+      const p = result.patient;
+      const cg = result.caregiver;
+
+      const respondenNama = p?.name || cg?.nama_keluarga || '-';
+      const respondenUmur = p?.age ?? cg?.umur_keluarga ?? '-';
+      const respondenJK = (p?.jenis_kelamin ?? cg?.jenis_kelamin) === 1 ? 'Laki-laki' : 'Perempuan';
+
+      const umurDetail = p?.umur_pasien != null ? p.umur_pasien.toString() : '-';
+      const lamaDM = p?.lama_menderita_dm != null ? p.lama_menderita_dm.toString() : '-';
+      const penyakitLain = p?.penyakit_lain || '-';
+
+      const caregiverNama = p?.caregiver?.nama_keluarga || cg?.nama_keluarga || '-';
+      const caregiverHub = p?.caregiver?.hubungan_dengan_pasien || cg?.hubungan_dengan_pasien || '-';
+
+      const tanggal = new Date(result.date).toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+
       excelData.push([
-        result.patient.name,
-        result.patient.age.toString(),
-        result.patient.jenis_kelamin === 1 ? 'Laki-laki' : 'Perempuan',
-        result.patient.umur_pasien.toString(),
-        result.patient.lama_menderita_dm.toString(),
-        result.patient.penyakit_lain || '-',
-        result.patient.caregiver?.nama_keluarga || '-',
-        result.patient.caregiver?.hubungan_dengan_pasien || '-',
-        new Date(result.date).toLocaleDateString('id-ID', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric'
-        }),
+        respondenNama,
+        respondenUmur.toString(),
+        respondenJK,
+        umurDetail,
+        lamaDM,
+        penyakitLain,
+        caregiverNama,
+        caregiverHub,
+        tanggal,
         result.template.title,
         result.totalScore.toString(),
         result.resultLabel
@@ -66,10 +83,10 @@ export async function GET(request: NextRequest) {
 
     const worksheet = XLSX.utils.aoa_to_sheet(excelData);
     
-    // Format date column
-    const dateRange = XLSX.utils.decode_range(worksheet['!ref'] || 'A1:F1');
+    // Format date column (Tanggal Skrining is at index 8)
+    const dateRange = XLSX.utils.decode_range(worksheet['!ref'] || 'A1:L1');
     for (let R = dateRange.s.r + 1; R <= dateRange.e.r; ++R) {
-      const cellAddress = XLSX.utils.encode_cell({ r: R, c: 2 }); // Column C (Tanggal)
+      const cellAddress = XLSX.utils.encode_cell({ r: R, c: 8 });
       if (worksheet[cellAddress]) {
         worksheet[cellAddress].z = 'dd/mm/yyyy';
       }
