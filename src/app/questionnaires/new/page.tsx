@@ -28,6 +28,7 @@ interface ResultTier {
 export default function NewQuestionnaire() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [jenisKuesioner, setJenisKuesioner] = useState<'Pasien' | 'Caregiver' | 'Keduanya'>('Pasien');
   const [questions, setQuestions] = useState<Question[]>([]);
   const [resultTiers, setResultTiers] = useState<ResultTier[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -146,6 +147,7 @@ export default function NewQuestionnaire() {
         body: JSON.stringify({
           title,
           description,
+          jenis_kuesioner: jenisKuesioner,
           questions: questions.map(q => ({
             text: q.text,
             type: q.type,
@@ -224,6 +226,21 @@ export default function NewQuestionnaire() {
                   rows={3}
                   placeholder="Jelaskan tujuan dan konteks penggunaan kuesioner ini"
                 />
+              </div>
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-black mb-1">
+                  Jenis Kuesioner *
+                </label>
+                <select
+                  value={jenisKuesioner}
+                  onChange={(e) => setJenisKuesioner(e.target.value as 'Pasien' | 'Caregiver' | 'Keduanya')}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                  required
+                >
+                  <option value="Pasien">Untuk Pasien</option>
+                  <option value="Caregiver">Untuk Caregiver</option>
+                  <option value="Keduanya">Untuk Pasien dan Caregiver</option>
+                </select>
               </div>
             </div>
           </div>

@@ -20,43 +20,83 @@ model Doctor {
   password    String // Password akan di-hash sebelum disimpan
   name        String?
   patients    Patient[]
+  caregivers  Caregiver[]
   templates   QuestionnaireTemplate[]
   results     ScreeningResult[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
+// Model untuk Caregiver/Keluarga
+model Caregiver {
+  id                    String   @id @default(cuid())
+  nama_keluarga         String
+  jenis_kelamin         Int      // 1=Laki-laki, 0=Perempuan
+  umur_keluarga         Int
+  hubungan_dengan_pasien HubunganDenganPasien
+  doctor                Doctor   @relation(fields: [doctorId], references: [id])
+  doctorId              String
+  patients              Patient[]
+  results               ScreeningResult[]
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+// Enum untuk hubungan dengan pasien
+enum HubunganDenganPasien {
+  Anak
+  OrangTua
+  SaudaraKandung
+  Lainnya
+}
+
+// Enum untuk jenis kuesioner
+enum JenisKuesioner {
+  Pasien
+  Caregiver
+  Keduanya
+}
+
 // Model untuk Pasien
 model Patient {
-  id          String   @id @default(cuid())
-  name        String
-  age         Int
-  doctor      Doctor   @relation(fields: [doctorId], references: [id])
-  doctorId    String
-  results     ScreeningResult[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                String    @id @default(cuid())
+  name              String
+  age               Int
+  jenis_kelamin     Int?      // 1=Laki-laki, 0=Perempuan (optional untuk backward compatibility)
+  umur_pasien       Int?      // optional untuk backward compatibility
+  lama_menderita_dm Float?    // e.g., 3.3 for 3 years 3 months (optional untuk backward compatibility)
+  penyakit_lain     String?
+  doctor            Doctor    @relation(fields: [doctorId], references: [id])
+  doctorId          String
+  caregiver         Caregiver? @relation(fields: [caregiverId], references: [id])
+  caregiverId       String?
+  results           ScreeningResult[]
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 }
 
 // Model untuk Template Kuesioner
 model QuestionnaireTemplate {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  doctor      Doctor   @relation(fields: [doctorId], references: [id])
-  doctorId    String
-  questions   Json     // Menyimpan struktur pertanyaan & jawaban sebagai JSON
-  resultTiers Json     // Menyimpan definisi hasil sebagai JSON
-  results     ScreeningResult[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String         @id @default(cuid())
+  title           String
+  description     String?
+  jenis_kuesioner JenisKuesioner @default(Pasien)
+  doctor          Doctor         @relation(fields: [doctorId], references: [id])
+  doctorId        String
+  questions       Json           // Menyimpan struktur pertanyaan & jawaban sebagai JSON
+  resultTiers     Json           // Menyimpan definisi hasil sebagai JSON
+  results         ScreeningResult[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 }
 
 // Model untuk Hasil Skrining
 model ScreeningResult {
   id          String    @id @default(cuid())
-  patient     Patient   @relation(fields: [patientId], references: [id])
-  patientId   String
+  patient     Patient?  @relation(fields: [patientId], references: [id])
+  patientId   String?
+  caregiver   Caregiver? @relation(fields: [caregiverId], references: [id])
+  caregiverId String?
   doctor      Doctor    @relation(fields: [doctorId], references: [id])
   doctorId    String
   template    QuestionnaireTemplate @relation(fields: [templateId], references: [id])

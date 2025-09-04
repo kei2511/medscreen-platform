@@ -21,15 +21,21 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const patientId = searchParams.get('patientId');
+    const caregiverId = searchParams.get('caregiverId');
 
-    const whereClause = patientId 
-      ? { doctorId: doctor.doctorId, patientId }
-      : { doctorId: doctor.doctorId };
+    let whereClause: any = { doctorId: doctor.doctorId };
+    if (patientId) {
+      whereClause.patientId = patientId;
+    }
+    if (caregiverId) {
+      whereClause.caregiverId = caregiverId;
+    }
 
     const results = await prisma.screeningResult.findMany({
       where: whereClause,
       include: {
         patient: true,
+        caregiver: true,
         template: true
       },
       orderBy: {
@@ -54,18 +60,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { patientId, templateId, answers, totalScore, resultLabel, recommendation } = await request.json();
+    const { patientId, caregiverId, templateId, answers, totalScore, resultLabel, recommendation } = await request.json();
 
-    if (!patientId || !templateId || !answers || totalScore === undefined || !resultLabel) {
+    if ((!patientId && !caregiverId) || !templateId || !answers || totalScore === undefined || !resultLabel) {
       return NextResponse.json(
-        { error: 'All fields are required' },
+        { error: 'Patient or caregiver ID, template ID, answers, total score, and result label are required' },
         { status: 400 }
       );
     }
 
     const screeningResult = await prisma.screeningResult.create({
       data: {
-        patientId,
+        patientId: patientId || null,
+        caregiverId: caregiverId || null,
         templateId,
         doctorId: doctor.doctorId,
         answers,
@@ -75,6 +82,7 @@ export async function POST(request: NextRequest) {
       },
       include: {
         patient: true,
+        caregiver: true,
         template: true
       }
     });

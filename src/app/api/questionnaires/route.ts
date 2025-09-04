@@ -43,11 +43,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { title, description, questions, resultTiers } = await request.json();
+    const { title, description, jenis_kuesioner, questions, resultTiers } = await request.json();
 
-    if (!title || !questions || !resultTiers) {
+    if (!title || !questions || !resultTiers || !jenis_kuesioner) {
       return NextResponse.json(
-        { error: 'Title, questions, and result tiers are required' },
+        { error: 'Title, questions, result tiers, and jenis kuesioner are required' },
         { status: 400 }
       );
     }
@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
       data: {
         title,
         description,
+        jenis_kuesioner,
         questions,
         resultTiers,
         doctorId: doctor.doctorId
