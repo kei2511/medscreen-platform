@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
+import { requireRole, isAdmin } from '@/lib/roleCheck';
 
 async function getDoctorFromRequest(request: NextRequest) {
   const authHeader = request.headers.get('Authorization');
@@ -44,9 +45,10 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const doctor = await getDoctorFromRequest(request);
-    if (!doctor) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    
+    // Hanya admin yang bisa membuat kuesioner
+    const roleCheck = requireRole(doctor, 'ADMIN');
+    if (roleCheck) return roleCheck;
 
     const { title, description, jenis_kuesioner, questions, resultTiers, isPublic } = await request.json();
 
