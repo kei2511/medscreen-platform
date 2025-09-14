@@ -27,11 +27,16 @@ export async function POST(request: NextRequest) {
 
     const hashedPassword = hashPassword(password);
 
+    // Check if this is the first user
+    const userCount = await prisma.doctor.count();
+    const isFirstUser = userCount === 0;
+
     const doctor = await prisma.doctor.create({
       data: {
         email,
         password: hashedPassword,
-        name: name || null
+        name: name || null,
+        role: isFirstUser ? 'ADMIN' : 'USER'
       }
     });
 
@@ -39,7 +44,8 @@ export async function POST(request: NextRequest) {
       doctor: {
         id: doctor.id,
         email: doctor.email,
-        name: doctor.name
+        name: doctor.name,
+        role: doctor.role
       }
     });
   } catch (error) {

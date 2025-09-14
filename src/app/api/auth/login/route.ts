@@ -26,7 +26,8 @@ export async function POST(request: NextRequest) {
 
     const token = generateToken({
       doctorId: doctor.id,
-      email: doctor.email
+      email: doctor.email,
+      role: doctor.role
     });
 
     return NextResponse.json({
@@ -34,7 +35,8 @@ export async function POST(request: NextRequest) {
       doctor: {
         id: doctor.id,
         email: doctor.email,
-        name: doctor.name
+        name: doctor.name,
+        role: doctor.role
       }
     });
   } catch (error) {
