@@ -203,16 +203,55 @@ export default function AddPatientPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Lama Menderita DM (tahun) (opsional)
               </label>
-              <input
-                type="number"
-                name="lama_menderita_dm"
-                value={formData.lama_menderita_dm}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Contoh: 3.8 untuk 3 tahun 8 bulan"
-                step="0.1"
-                min="0"
-              />
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <input
+                    type="number"
+                    name="lama_menderita_dm"
+                    value={formData.lama_menderita_dm.split('.')[0] || ''}
+                    onChange={(e) => {
+                      const tahun = e.target.value;
+                      const bulan = formData.lama_menderita_dm.split('.')[1] || '';
+                      setFormData(prev => ({
+                        ...prev,
+                        lama_menderita_dm: `${tahun}${bulan ? '.' + bulan : ''}`
+                      }));
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Tahun"
+                    min="0"
+                  />
+                  <span className="text-xs text-gray-500 mt-1 block">Tahun</span>
+                </div>
+                <div className="flex-1">
+                  <select
+                    value={formData.lama_menderita_dm.split('.')[1] || ''}
+                    onChange={(e) => {
+                      const tahun = formData.lama_menderita_dm.split('.')[0] || '';
+                      const bulan = e.target.value;
+                      setFormData(prev => ({
+                        ...prev,
+                        lama_menderita_dm: `${tahun}${bulan ? '.' + bulan : ''}`
+                      }));
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">0 bulan</option>
+                    <option value="1">1 bulan</option>
+                    <option value="2">2 bulan</option>
+                    <option value="3">3 bulan</option>
+                    <option value="4">4 bulan</option>
+                    <option value="5">5 bulan</option>
+                    <option value="6">6 bulan</option>
+                    <option value="7">7 bulan</option>
+                    <option value="8">8 bulan</option>
+                    <option value="9">9 bulan</option>
+                    <option value="10">10 bulan</option>
+                    <option value="11">11 bulan</option>
+                  </select>
+                  <span className="text-xs text-gray-500 mt-1 block">Bulan</span>
+                </div>
+              </div>
             </div>
 
             <div>
