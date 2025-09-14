@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Hasil Skrining');
     
     const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
-    const filename = `medscreen-results-${new Date().toISOString().split('T')[0]}.xlsx`;
+    const filename = `sicarabet-results-${new Date().toISOString().split('T')[0]}.xlsx`;
 
     return new NextResponse(buffer, {
       headers: {
