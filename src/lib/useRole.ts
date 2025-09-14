@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import jwt_decode from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 import { getAuthToken } from './auth';
 
 interface DecodedToken {
@@ -13,15 +13,21 @@ export function useRole() {
 
   useEffect(() => {
     const token = getAuthToken();
-    if (token) {
-      try {
-        const decoded = jwt_decode(token) as DecodedToken;
+    if (!token) {
+      setRole(null);
+      return;
+    }
+
+    try {
+      const decoded = jwtDecode<DecodedToken>(token);
+      if (decoded && (decoded.role === 'ADMIN' || decoded.role === 'USER')) {
         setRole(decoded.role);
-      } catch (error) {
-        console.error('Error decoding token:', error);
+      } else {
+        console.error('Invalid role in token:', decoded);
         setRole(null);
       }
-    } else {
+    } catch (error) {
+      console.error('Error decoding token:', error);
       setRole(null);
     }
   }, []);
