@@ -20,12 +20,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Dapatkan kuesioner berdasarkan role
     const questionnaires = await prisma.questionnaireTemplate.findMany({
       where: {
-        OR: [
-          { doctorId: doctor.doctorId },
-          { isPublic: true }
-        ]
+        doctorId: doctor.doctorId
       },
       orderBy: {
         createdAt: 'desc'
@@ -45,10 +43,14 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const doctor = await getDoctorFromRequest(request);
-    
+    if (!doctor) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     // Hanya admin yang bisa membuat kuesioner
-    const roleCheck = requireRole(doctor, 'ADMIN');
-    if (roleCheck) return roleCheck;
+    if (doctor.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Forbidden. Only admin can create questionnaires.' }, { status: 403 });
+    }
 
     const { title, description, jenis_kuesioner, questions, resultTiers, isPublic } = await request.json();
 
@@ -66,7 +68,6 @@ export async function POST(request: NextRequest) {
         jenis_kuesioner,
         questions,
         resultTiers,
-        isPublic: isPublic ?? false,
         doctorId: doctor.doctorId
       }
     });

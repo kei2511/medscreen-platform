@@ -19,10 +19,14 @@ export async function PUT(
 ) {
   try {
     const doctor = await getDoctorFromRequest(request);
-    
+    if (!doctor) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     // Hanya admin yang bisa mengedit kuesioner
-    const roleCheck = requireRole(doctor, 'ADMIN');
-    if (roleCheck) return roleCheck;
+    if (doctor.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Forbidden. Only admin can edit questionnaires.' }, { status: 403 });
+    }
 
     const body = await request.json();
     const { title, description, jenis_kuesioner, questions, resultTiers, isPublic } = body;
@@ -57,7 +61,6 @@ export async function PUT(
         title,
         description,
         jenis_kuesioner,
-        isPublic,
         questions: questions as any,
         resultTiers: resultTiers as any,
       },
