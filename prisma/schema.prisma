@@ -13,12 +13,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Enum untuk role user
+enum Role {
+  USER
+  ADMIN
+}
+
 // Model untuk Dokter/Pengguna
 model Doctor {
   id          String   @id @default(cuid())
   email       String   @unique
   password    String // Password akan di-hash sebelum disimpan
   name        String?
+  role        Role     @default(USER)
   patients    Patient[]
   caregivers  Caregiver[]
   templates   QuestionnaireTemplate[]
