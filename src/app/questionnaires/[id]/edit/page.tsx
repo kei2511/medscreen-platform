@@ -27,6 +27,7 @@ interface Questionnaire {
   title: string;
   description?: string;
   jenis_kuesioner?: 'Pasien' | 'Caregiver' | 'Keduanya';
+  isPublic?: boolean;
   questions: Question[];
   resultTiers: ResultTier[];
 }
@@ -36,6 +37,7 @@ export default function EditQuestionnaire() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [jenisKuesioner, setJenisKuesioner] = useState<'Pasien' | 'Caregiver' | 'Keduanya'>('Pasien');
+  const [isPublic, setIsPublic] = useState(false);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [resultTiers, setResultTiers] = useState<ResultTier[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -68,6 +70,7 @@ export default function EditQuestionnaire() {
         setTitle(data.title);
         setDescription(data.description || '');
         setJenisKuesioner(data.jenis_kuesioner || 'Pasien');
+        setIsPublic(data.isPublic || false);
         
         // Normalisasi data untuk backward compatibility
         const normalizedQuestions = (data.questions || []).map((q: any) => {
@@ -190,6 +193,7 @@ export default function EditQuestionnaire() {
           title,
           description,
           jenis_kuesioner: jenisKuesioner,
+          isPublic,
           questions: questions.map(q => ({
             text: q.text,
             type: q.type,
@@ -303,6 +307,20 @@ export default function EditQuestionnaire() {
                 <option value="Caregiver">Untuk Caregiver</option>
                 <option value="Keduanya">Untuk Pasien dan Caregiver</option>
               </select>
+            </div>
+
+            {/* Visibility Setting */}
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="isPublic"
+                checked={isPublic}
+                onChange={(e) => setIsPublic(e.target.checked)}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label htmlFor="isPublic" className="text-sm font-medium text-black">
+                Jadikan kuesioner ini publik (dapat dilihat oleh semua pengguna)
+              </label>
             </div>
 
             {/* Questions */}
