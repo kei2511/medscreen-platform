@@ -20,7 +20,12 @@ export async function GET(request: NextRequest) {
     }
 
     const questionnaires = await prisma.questionnaireTemplate.findMany({
-      where: { doctorId: doctor.doctorId },
+      where: {
+        OR: [
+          { doctorId: doctor.doctorId },
+          { isPublic: true }
+        ]
+      },
       orderBy: {
         createdAt: 'desc'
       }
@@ -43,7 +48,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { title, description, jenis_kuesioner, questions, resultTiers } = await request.json();
+    const { title, description, jenis_kuesioner, questions, resultTiers, isPublic } = await request.json();
 
     if (!title || !questions || !resultTiers || !jenis_kuesioner) {
       return NextResponse.json(
@@ -59,6 +64,7 @@ export async function POST(request: NextRequest) {
         jenis_kuesioner,
         questions,
         resultTiers,
+        isPublic: isPublic ?? false,
         doctorId: doctor.doctorId
       }
     });

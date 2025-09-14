@@ -9,8 +9,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 // Model untuk Dokter/Pengguna
@@ -83,6 +83,7 @@ model QuestionnaireTemplate {
   jenis_kuesioner JenisKuesioner @default(Pasien)
   doctor          Doctor         @relation(fields: [doctorId], references: [id])
   doctorId        String
+  isPublic        Boolean        @default(false)
   questions       Json           // Menyimpan struktur pertanyaan & jawaban sebagai JSON
   resultTiers     Json           // Menyimpan definisi hasil sebagai JSON
   results         ScreeningResult[]
