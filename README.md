@@ -1,10 +1,10 @@
-# MedScreen Platform
+# SiCarAbet: Aplikasi Caring for Diabetes
 
-A comprehensive medical screening web application designed for healthcare professionals to create, manage, and conduct digital health screenings for patients.
+A web application designed for healthcare professionals to manage and conduct diabetes screening and monitoring.
 
 ## 🏥 Overview
 
-MedScreen Platform is a secure, user-friendly web application that enables doctors to:
+SiCarAbet (Sistem Caring for Diabetes) is a secure, user-friendly web application that enables doctors to:
 - Create customizable health screening questionnaires
 - Manage patient data and screening history
 - Conduct digital screenings with automated scoring

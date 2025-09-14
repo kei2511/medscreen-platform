@@ -1,7 +1,7 @@
 {
-  "name": "MedScreen Platform",
-  "short_name": "MedScreen",
-  "description": "Platform skrining kesehatan mental untuk profesional kesehatan",
+  "name": "SiCarAbet: Aplikasi Caring for Diabetes",
+  "short_name": "SiCarAbet",
+  "description": "Platform skrining dan perawatan untuk pasien diabetes dan caregiver",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

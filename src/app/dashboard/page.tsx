@@ -125,7 +125,7 @@ export default function Dashboard() {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `medscreen-results-${new Date().toISOString().split('T')[0]}.csv`;
+        a.download = `sicarabet-results-${new Date().toISOString().split('T')[0]}.csv`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -203,7 +203,7 @@ export default function Dashboard() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
               </div>
-              <h1 className="text-lg sm:text-xl font-semibold text-black">MedScreen Dashboard</h1>
+              <h1 className="text-lg sm:text-xl font-semibold text-black">SiCarAbet Dashboard</h1>
             </div>
             <div className="flex items-center space-x-2 sm:space-x-4">
               <span className="text-xs sm:text-sm text-black hidden sm:block">Halo, {doctorName || 'Dokter'}</span>

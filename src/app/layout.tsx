@@ -13,13 +13,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MedScreen Platform",
-  description: "Platform skrining kesehatan mental untuk profesional kesehatan",
+  title: "SiCarAbet: Aplikasi Caring for Diabetes",
+  description: "Platform skrining dan perawatan untuk pasien diabetes dan caregiver",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "MedScreen",
+    title: "SiCarAbet",
   },
   themeColor: "#2563eb",
   viewport: {
@@ -48,7 +48,7 @@ export default function RootLayout({
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="MedScreen" />
+        <meta name="apple-mobile-web-app-title" content="SiCarAbet" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-TileColor" content="#2563eb" />
