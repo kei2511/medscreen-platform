@@ -23,7 +23,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { title, description, jenis_kuesioner, questions, resultTiers } = body;
+    const { title, description, jenis_kuesioner, questions, resultTiers, isPublic } = body;
 
     // Validate input
     if (!title || !Array.isArray(questions) || !Array.isArray(resultTiers) || !jenis_kuesioner) {
@@ -55,6 +55,7 @@ export async function PUT(
         title,
         description,
         jenis_kuesioner,
+        isPublic,
         questions: questions as any,
         resultTiers: resultTiers as any,
       },
