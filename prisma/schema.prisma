@@ -19,6 +19,13 @@ enum Role {
   ADMIN
 }
 
+// Enum untuk tipe peran user (internal use for auth tokens)
+// NOTE: Tidak dipakai langsung oleh Prisma relation existing Doctor; Respondent pakai enum ini
+enum UserRole {
+  DOCTOR
+  RESPONDENT
+}
+
 // Model untuk Dokter/Pengguna
 model Doctor {
   id          String   @id @default(cuid())
@@ -94,6 +101,7 @@ model QuestionnaireTemplate {
   questions       Json           // Menyimpan struktur pertanyaan & jawaban sebagai JSON
   resultTiers     Json           // Menyimpan definisi hasil sebagai JSON
   results         ScreeningResult[]
+  respondentSubmissions RespondentSubmission[]
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 }
@@ -116,4 +124,37 @@ model ScreeningResult {
   answers     Json      // Menyimpan jawaban lengkap untuk referensi
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+// Model untuk pengguna responden (pasien/caregiver mandiri yang mengisi sendiri)
+model Respondent {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  password        String
+  name            String?
+  // Data baseline pasien
+  patientName     String
+  patientAge      Int?
+  patientGender   String? // "Laki-laki" / "Perempuan" / lainnya jika dibutuhkan
+  // Data baseline caregiver (opsional)
+  caregiverName     String?
+  caregiverRelation String?
+  submissions      RespondentSubmission[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+// Penyimpanan hasil kuesioner yang diisi oleh Respondent tanpa intervensi Doctor
+model RespondentSubmission {
+  id           String @id @default(cuid())
+  respondent   Respondent @relation(fields: [respondentId], references: [id])
+  respondentId String
+  template     QuestionnaireTemplate @relation(fields: [templateId], references: [id])
+  templateId   String
+  fillAs       JenisKuesioner // Pasien atau Caregiver. Jika template Keduanya, user memilih salah satu saat isi
+  totalScore   Int
+  resultLabel  String?
+  recommendation String?
+  answers      Json
+  createdAt    DateTime @default(now())
 }
