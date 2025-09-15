@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { hashPassword, verifyPassword, generateToken } from '@/lib/auth';
+import { verifyPassword, generateToken } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,18 +25,18 @@ export async function POST(request: NextRequest) {
     }
 
     const token = generateToken({
-      doctorId: doctor.id,
-      email: doctor.email,
-      role: doctor.role
+  doctorId: doctor.id,
+  email: doctor.email,
+  role: 'DOCTOR'
     });
 
     return NextResponse.json({
       token,
       doctor: {
-        id: doctor.id,
-        email: doctor.email,
-        name: doctor.name,
-        role: doctor.role
+  id: doctor.id,
+  email: doctor.email,
+  name: doctor.name,
+  role: 'DOCTOR'
       }
     });
   } catch (error) {
