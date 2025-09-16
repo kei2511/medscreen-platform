@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
-import { requireRole, isAdmin } from '@/lib/roleCheck';
 
-async function getDoctorFromRequest(request: NextRequest) {
+async function getTokenPayload(request: NextRequest) {
   const authHeader = request.headers.get('Authorization');
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return null;
@@ -15,15 +14,17 @@ async function getDoctorFromRequest(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const doctor = await getDoctorFromRequest(request);
-    if (!doctor) {
+    const payload = await getTokenPayload(request);
+    if (!payload?.doctorId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const doctor = await prisma.doctor.findUnique({ where: { id: payload.doctorId } });
+    if (!doctor) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     // Dapatkan kuesioner berdasarkan role
     const questionnaires = await prisma.questionnaireTemplate.findMany({
       where: {
-        doctorId: doctor.doctorId
+        doctorId: doctor.id
       },
       orderBy: {
         createdAt: 'desc'
@@ -42,13 +43,14 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const doctor = await getDoctorFromRequest(request);
-    if (!doctor) {
+    const payload = await getTokenPayload(request);
+    if (!payload?.doctorId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Hanya admin yang bisa membuat kuesioner
-    if (doctor.role !== 'ADMIN') {
+    const doctor = await prisma.doctor.findUnique({ where: { id: payload.doctorId } });
+    if (!doctor) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if ((doctor as any).role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden. Only admin can create questionnaires.' }, { status: 403 });
     }
 
@@ -68,7 +70,7 @@ export async function POST(request: NextRequest) {
         jenis_kuesioner,
         questions,
         resultTiers,
-        doctorId: doctor.doctorId
+        doctorId: doctor.id
       }
     });
 

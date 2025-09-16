@@ -11,9 +11,10 @@ function getJwtSecret(): string {
 
 export interface TokenPayload {
   email: string;
-  role: 'DOCTOR' | 'RESPONDENT';
+  role: 'DOCTOR' | 'RESPONDENT'; // principal type
   doctorId?: string;
   respondentId?: string;
+  appRole?: 'USER' | 'ADMIN'; // application-level role for doctor accounts
 }
 
 export function generateToken(payload: TokenPayload): string {
@@ -27,7 +28,8 @@ export function verifyToken(token: string): TokenPayload | null {
       email: decoded.email as string,
       role: decoded.role as 'DOCTOR' | 'RESPONDENT',
       doctorId: decoded.doctorId as string | undefined,
-      respondentId: decoded.respondentId as string | undefined
+      respondentId: decoded.respondentId as string | undefined,
+      appRole: decoded.appRole as 'USER' | 'ADMIN' | undefined
     };
   } catch {
     return null;
