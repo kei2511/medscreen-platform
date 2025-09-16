@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,53 +5,127 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  // If you need to force a schema: add `?schema=public` to your DATABASE_URL or use the preview feature
 }
 
-// Enum untuk role user
+model Doctor {
+  id         String                  @id @default(cuid())
+  email      String                  @unique
+  password   String
+  name       String?
+  createdAt  DateTime                @default(now())
+  updatedAt  DateTime                @updatedAt
+  role       Role                    @default(USER)
+  caregivers Caregiver[]
+  patients   Patient[]
+  templates  QuestionnaireTemplate[]
+  results    ScreeningResult[]
+}
+
+model Caregiver {
+  id                     String               @id @default(cuid())
+  nama_keluarga          String
+  jenis_kelamin          Int
+  umur_keluarga          Int
+  hubungan_dengan_pasien HubunganDenganPasien
+  doctorId               String
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+  doctor                 Doctor               @relation(fields: [doctorId], references: [id])
+  patients               Patient[]
+  results                ScreeningResult[]
+}
+
+model Patient {
+  id                String            @id @default(cuid())
+  name              String
+  age               Int
+  doctorId          String
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  caregiverId       String?
+  jenis_kelamin     Int?
+  lama_menderita_dm Float?
+  penyakit_lain     String?
+  umur_pasien       Int?
+  caregiver         Caregiver?        @relation(fields: [caregiverId], references: [id])
+  doctor            Doctor            @relation(fields: [doctorId], references: [id])
+  results           ScreeningResult[]
+}
+
+model QuestionnaireTemplate {
+  id                    String                 @id @default(cuid())
+  title                 String
+  description           String?
+  doctorId              String
+  questions             Json
+  resultTiers           Json
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  jenis_kuesioner       JenisKuesioner         @default(Pasien)
+  isPublic              Boolean                @default(false)
+  doctor                Doctor                 @relation(fields: [doctorId], references: [id])
+  respondentSubmissions RespondentSubmission[]
+  results               ScreeningResult[]
+}
+
+model ScreeningResult {
+  id             String                @id @default(cuid())
+  patientId      String?
+  doctorId       String
+  templateId     String
+  date           DateTime              @default(now())
+  totalScore     Int
+  resultLabel    String
+  recommendation String?
+  answers        Json
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  caregiverId    String?
+  caregiver      Caregiver?            @relation(fields: [caregiverId], references: [id])
+  doctor         Doctor                @relation(fields: [doctorId], references: [id])
+  patient        Patient?              @relation(fields: [patientId], references: [id])
+  template       QuestionnaireTemplate @relation(fields: [templateId], references: [id])
+}
+
+model Respondent {
+  id                String                 @id @default(cuid())
+  email             String                 @unique
+  password          String
+  name              String?
+  patientName       String
+  patientAge        Int?
+  patientGender     String?
+  caregiverName     String?
+  caregiverRelation String?
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  submissions       RespondentSubmission[]
+}
+
+model RespondentSubmission {
+  id             String                @id @default(cuid())
+  respondentId   String
+  templateId     String
+  fillAs         JenisKuesioner
+  totalScore     Int
+  resultLabel    String?
+  recommendation String?
+  answers        Json
+  createdAt      DateTime              @default(now())
+  respondent     Respondent            @relation(fields: [respondentId], references: [id])
+  template       QuestionnaireTemplate @relation(fields: [templateId], references: [id])
+}
+
 enum Role {
   USER
   ADMIN
 }
 
-// Enum untuk tipe peran user (internal use for auth tokens)
-// NOTE: Tidak dipakai langsung oleh Prisma relation existing Doctor; Respondent pakai enum ini
 enum UserRole {
   DOCTOR
   RESPONDENT
 }
 
-// Model untuk Dokter/Pengguna
-model Doctor {
-  id          String   @id @default(cuid())
-  email       String   @unique
-  password    String // Password akan di-hash sebelum disimpan
-  name        String?
-  role        Role     @default(USER)
-  patients    Patient[]
-  caregivers  Caregiver[]
-  templates   QuestionnaireTemplate[]
-  results     ScreeningResult[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-// Model untuk Caregiver/Keluarga
-model Caregiver {
-  id                    String   @id @default(cuid())
-  nama_keluarga         String
-  jenis_kelamin         Int      // 1=Laki-laki, 0=Perempuan
-  umur_keluarga         Int
-  hubungan_dengan_pasien HubunganDenganPasien
-  doctor                Doctor   @relation(fields: [doctorId], references: [id])
-  doctorId              String
-  patients              Patient[]
-  results               ScreeningResult[]
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-}
-
-// Enum untuk hubungan dengan pasien
 enum HubunganDenganPasien {
   Anak
   OrangTua
@@ -65,97 +133,8 @@ enum HubunganDenganPasien {
   Lainnya
 }
 
-// Enum untuk jenis kuesioner
 enum JenisKuesioner {
   Pasien
   Caregiver
   Keduanya
-}
-
-// Model untuk Pasien
-model Patient {
-  id                String    @id @default(cuid())
-  name              String
-  age               Int
-  jenis_kelamin     Int?      // 1=Laki-laki, 0=Perempuan (optional untuk backward compatibility)
-  umur_pasien       Int?      // optional untuk backward compatibility
-  lama_menderita_dm Float?    // e.g., 3.3 for 3 years 3 months (optional untuk backward compatibility)
-  penyakit_lain     String?
-  doctor            Doctor    @relation(fields: [doctorId], references: [id])
-  doctorId          String
-  caregiver         Caregiver? @relation(fields: [caregiverId], references: [id])
-  caregiverId       String?
-  results           ScreeningResult[]
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-}
-
-// Model untuk Template Kuesioner
-model QuestionnaireTemplate {
-  id              String         @id @default(cuid())
-  title           String
-  description     String?
-  jenis_kuesioner JenisKuesioner @default(Pasien)
-  doctor          Doctor         @relation(fields: [doctorId], references: [id])
-  doctorId        String
-  isPublic        Boolean        @default(false)
-  questions       Json           // Menyimpan struktur pertanyaan & jawaban sebagai JSON
-  resultTiers     Json           // Menyimpan definisi hasil sebagai JSON
-  results         ScreeningResult[]
-  respondentSubmissions RespondentSubmission[]
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-}
-
-// Model untuk Hasil Skrining
-model ScreeningResult {
-  id          String    @id @default(cuid())
-  patient     Patient?  @relation(fields: [patientId], references: [id])
-  patientId   String?
-  caregiver   Caregiver? @relation(fields: [caregiverId], references: [id])
-  caregiverId String?
-  doctor      Doctor    @relation(fields: [doctorId], references: [id])
-  doctorId    String
-  template    QuestionnaireTemplate @relation(fields: [templateId], references: [id])
-  templateId  String
-  date        DateTime  @default(now())
-  totalScore  Int
-  resultLabel String
-  recommendation String?
-  answers     Json      // Menyimpan jawaban lengkap untuk referensi
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-}
-
-// Model untuk pengguna responden (pasien/caregiver mandiri yang mengisi sendiri)
-model Respondent {
-  id              String   @id @default(cuid())
-  email           String   @unique
-  password        String
-  name            String?
-  // Data baseline pasien
-  patientName     String
-  patientAge      Int?
-  patientGender   String? // "Laki-laki" / "Perempuan" / lainnya jika dibutuhkan
-  // Data baseline caregiver (opsional)
-  caregiverName     String?
-  caregiverRelation String?
-  submissions      RespondentSubmission[]
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-}
-
-// Penyimpanan hasil kuesioner yang diisi oleh Respondent tanpa intervensi Doctor
-model RespondentSubmission {
-  id           String @id @default(cuid())
-  respondent   Respondent @relation(fields: [respondentId], references: [id])
-  respondentId String
-  template     QuestionnaireTemplate @relation(fields: [templateId], references: [id])
-  templateId   String
-  fillAs       JenisKuesioner // Pasien atau Caregiver. Jika template Keduanya, user memilih salah satu saat isi
-  totalScore   Int
-  resultLabel  String?
-  recommendation String?
-  answers      Json
-  createdAt    DateTime @default(now())
 }
