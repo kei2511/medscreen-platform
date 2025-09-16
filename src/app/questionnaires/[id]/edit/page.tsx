@@ -130,20 +130,32 @@ export default function EditQuestionnaire() {
 
   const handleAddOption = (questionIndex: number) => {
     const newQuestions = [...questions];
+    if (!newQuestions[questionIndex].options) {
+      newQuestions[questionIndex].options = [];
+    }
     newQuestions[questionIndex].options.push({ text: '', score: 0, type: 'fixed' });
     setQuestions(newQuestions);
   };
 
   const handleRemoveOption = (questionIndex: number, optionIndex: number) => {
     const newQuestions = [...questions];
-    newQuestions[questionIndex].options.splice(optionIndex, 1);
+    if (newQuestions[questionIndex].options) {
+      newQuestions[questionIndex].options.splice(optionIndex, 1);
+    }
     setQuestions(newQuestions);
   };
 
   const handleOptionChange = (questionIndex: number, optionIndex: number, field: string, value: string | number) => {
     const newQuestions = [...questions];
-    newQuestions[questionIndex].options[optionIndex] = {
-      ...newQuestions[questionIndex].options[optionIndex],
+    if (!newQuestions[questionIndex].options) {
+      newQuestions[questionIndex].options = [];
+    }
+    const opts = newQuestions[questionIndex].options;
+    if (!opts[optionIndex]) {
+      opts[optionIndex] = { text: '', score: 0, type: 'fixed' };
+    }
+    opts[optionIndex] = {
+      ...opts[optionIndex],
       [field]: field === 'score' ? Number(value) : value
     };
     setQuestions(newQuestions);
