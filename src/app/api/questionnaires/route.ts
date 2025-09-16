@@ -20,45 +20,30 @@ export async function GET(request: NextRequest) {
 
     // If unauthenticated -> only return public questionnaires (no sensitive data)
     if (!payload) {
-      let all: any[] = [];
       try {
-        all = await prisma.questionnaireTemplate.findMany({ orderBy: { createdAt: 'desc' } });
+        const publicQs = await prisma.questionnaireTemplate.findMany({
+          where: ({ isPublic: true } as any),
+          orderBy: { createdAt: 'desc' }
+        });
+        return NextResponse.json(publicQs);
       } catch (err) {
-        console.error('GET questionnaires (anon) primary query error:', err);
-        // Fallback minimal select to avoid potential column mismatch crashes
-        try {
-          all = await prisma.questionnaireTemplate.findMany({
-            orderBy: { createdAt: 'desc' },
-            select: { id: true, title: true, description: true, jenis_kuesioner: true, createdAt: true }
-          }) as any[];
-        } catch (err2) {
-          console.error('GET questionnaires (anon) fallback query error:', err2);
-          return NextResponse.json({ error: 'Internal server error (Q1)' }, { status: 500 });
-        }
+        console.error('GET questionnaires (anon) error:', err);
+        return NextResponse.json({ error: 'Internal server error (Q1)' }, { status: 500 });
       }
-      const publicQs = (all as any[]).filter(q => Object.prototype.hasOwnProperty.call(q, 'isPublic') ? (q as any).isPublic : false);
-      return NextResponse.json(publicQs);
     }
 
     // Respondent: boleh melihat hanya public questionnaires
     if (payload.role === 'RESPONDENT') {
-      let all: any[] = [];
       try {
-        all = await prisma.questionnaireTemplate.findMany({ orderBy: { createdAt: 'desc' } });
+        const publicQs = await prisma.questionnaireTemplate.findMany({
+          where: ({ isPublic: true } as any),
+          orderBy: { createdAt: 'desc' }
+        });
+        return NextResponse.json(publicQs);
       } catch (err) {
-        console.error('GET questionnaires (respondent) primary query error:', err);
-        try {
-          all = await prisma.questionnaireTemplate.findMany({
-            orderBy: { createdAt: 'desc' },
-            select: { id: true, title: true, description: true, jenis_kuesioner: true, createdAt: true }
-          }) as any[];
-        } catch (err2) {
-          console.error('GET questionnaires (respondent) fallback query error:', err2);
-          return NextResponse.json({ error: 'Internal server error (Q2)' }, { status: 500 });
-        }
+        console.error('GET questionnaires (respondent) error:', err);
+        return NextResponse.json({ error: 'Internal server error (Q2)' }, { status: 500 });
       }
-      const respondentQs = (all as any[]).filter(q => Object.prototype.hasOwnProperty.call(q, 'isPublic') ? (q as any).isPublic : false);
-      return NextResponse.json(respondentQs);
     }
 
     // Doctor path
@@ -75,29 +60,22 @@ export async function GET(request: NextRequest) {
     }
     if (!doctor) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const whereClause = { doctorId: doctor.id } as const;
-
-    let questionnaires: any[] = [];
+    // Doctor can see own questionnaires + public from other doctors
     try {
-      questionnaires = await prisma.questionnaireTemplate.findMany({
-        where: whereClause,
+      const questionnaires = await prisma.questionnaireTemplate.findMany({
+        where: ({
+          OR: [
+            { doctorId: doctor.id },
+            { isPublic: true } as any
+          ]
+        } as any),
         orderBy: { createdAt: 'desc' }
       });
+      return NextResponse.json(questionnaires);
     } catch (err) {
-      console.error('GET questionnaires doctor primary query error:', err);
-      try {
-        questionnaires = await prisma.questionnaireTemplate.findMany({
-          where: whereClause,
-          orderBy: { createdAt: 'desc' },
-          select: { id: true, title: true, description: true, jenis_kuesioner: true, createdAt: true }
-        }) as any[];
-      } catch (err2) {
-        console.error('GET questionnaires doctor fallback query error:', err2);
-        return NextResponse.json({ error: 'Internal server error (Q3)' }, { status: 500 });
-      }
+      console.error('GET questionnaires doctor error:', err);
+      return NextResponse.json({ error: 'Internal server error (Q3)' }, { status: 500 });
     }
-
-    return NextResponse.json(questionnaires);
   } catch (error) {
     console.error('Get questionnaires error:', error instanceof Error ? error.message : error);
     return NextResponse.json(
