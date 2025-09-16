@@ -22,70 +22,55 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const patient = await prisma.patient.findUnique({
-      where: { 
-        id: params.id,
-        doctorId: doctor.doctorId
-      },
-      include: {
-        caregiver: true
-      }
+    // Determine if caller is admin by fetching doctor record
+    let doctorRecord: any = null;
+    try {
+      doctorRecord = await prisma.doctor.findUnique({ where: { id: doctor.doctorId } });
+    } catch (e) {
+      console.error('Doctor lookup failed', e);
+    }
+    const isAdmin = doctorRecord && doctorRecord.role === 'ADMIN';
+
+    // If admin: fetch patient by id only. If not: ensure ownership.
+    const patient = await prisma.patient.findFirst({
+      where: isAdmin
+        ? { id: params.id }
+        : { id: params.id, doctorId: doctor.doctorId },
+      include: { caregiver: true, ...(isAdmin ? { doctor: true } : {}) }
     });
 
     if (!patient) {
-      return NextResponse.json(
-        { error: 'Patient not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Patient not found' }, { status: 404 });
     }
 
-    // Get all screening results for this patient (both patient and caregiver results)
+    // Build where clause for results; admin sees all results tied to the patient regardless of doctor
+    const resultWhere: any = {
+      OR: [
+        { patientId: params.id },
+        { caregiver: { patients: { some: { id: params.id } } } }
+      ]
+    };
+    if (!isAdmin) {
+      resultWhere.doctorId = doctor.doctorId;
+    }
+
     const results = await prisma.screeningResult.findMany({
-      where: {
-        OR: [
-          { patientId: params.id },
-          { caregiver: { patients: { some: { id: params.id } } } }
-        ],
-        doctorId: doctor.doctorId
-      },
+      where: resultWhere,
       include: {
-        patient: {
-          select: {
-            id: true,
-            name: true
-          }
-        },
-        caregiver: {
-          select: {
-            id: true,
-            nama_keluarga: true,
-            hubungan_dengan_pasien: true
-          }
-        },
-        template: {
-          select: {
-            title: true
-          }
-        }
+        patient: { select: { id: true, name: true } },
+        caregiver: { select: { id: true, nama_keluarga: true, hubungan_dengan_pasien: true } },
+        template: { select: { title: true } }
       },
-      orderBy: {
-        date: 'desc'
-      }
+      orderBy: { date: 'desc' }
     });
 
     return NextResponse.json({
       ...patient,
+      ...(isAdmin
+        ? { doctorName: (patient as any).doctor?.name || null, doctorEmail: (patient as any).doctor?.email || null }
+        : {}),
       results
     });
-
-    if (!patient) {
-      return NextResponse.json(
-        { error: 'Patient not found' },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json(patient);
   } catch (error) {
     console.error('Get patient detail error:', error);
     return NextResponse.json(
