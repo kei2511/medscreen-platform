@@ -22,15 +22,23 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const result = await prisma.screeningResult.findUnique({
-      where: { 
-        id: params.id,
-        doctorId: doctor.doctorId
-      },
+    // Determine if caller is admin
+    let doctorRecord: any = null;
+    try {
+      doctorRecord = await prisma.doctor.findUnique({ where: { id: doctor.doctorId } });
+    } catch (e) {
+      console.error('Doctor lookup failed', e);
+    }
+    const isAdmin = doctorRecord && doctorRecord.role === 'ADMIN';
+
+    // If admin: search by id only; else enforce doctor ownership
+    const result = await prisma.screeningResult.findFirst({
+      where: isAdmin ? { id: params.id } : { id: params.id, doctorId: doctor.doctorId },
       include: {
         patient: true,
         caregiver: true,
-        template: true
+        template: true,
+        ...(isAdmin ? { doctor: true } : {})
       }
     });
 
@@ -38,7 +46,10 @@ export async function GET(
       return NextResponse.json({ error: 'Result not found' }, { status: 404 });
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json({
+      ...result,
+      ...(isAdmin ? { doctorName: (result as any).doctor?.name || null, doctorEmail: (result as any).doctor?.email || null } : {})
+    });
   } catch (error) {
     console.error('Get screening result error:', error);
     return NextResponse.json(

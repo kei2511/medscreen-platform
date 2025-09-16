@@ -10,6 +10,8 @@ interface ScreeningResult {
   resultLabel: string;
   recommendation?: string;
   date: string;
+  doctorName?: string | null;
+  doctorEmail?: string | null;
   patient?: {
     id: string;
     name: string;
@@ -138,6 +140,17 @@ export default function ScreeningResultPage() {
               </span>
               <span>•</span>
               <span>{new Date(result.date).toLocaleDateString('id-ID')}</span>
+              { (result.doctorName || result.doctorEmail) && (
+                <>
+                  <span>•</span>
+                  <span className="inline-flex items-center gap-1 bg-purple-100 text-purple-800 px-2 py-0.5 rounded">
+                    {result.doctorName || 'Dokter'}
+                    {result.doctorEmail && (
+                      <span className="text-[10px] sm:text-xs text-purple-600 ml-1">{result.doctorEmail}</span>
+                    )}
+                  </span>
+                </>
+              )}
             </div>
           </div>
 
@@ -256,12 +269,14 @@ export default function ScreeningResultPage() {
             >
               Kembali ke Dashboard
             </button>
-            <button
-              onClick={() => router.push(`/screening/new?patientId=${result.patient.id}`)}
-              className="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-            >
-              Skrining Baru
-            </button>
+            {result.patient && (
+              <button
+                onClick={() => router.push(`/screening/new?patientId=${result.patient?.id}`)}
+                className="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+              >
+                Skrining Baru
+              </button>
+            )}
           </div>
         </div>
       </div>
