@@ -2,38 +2,55 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 
+// Unified helper
 async function getTokenPayload(request: NextRequest) {
   const authHeader = request.headers.get('Authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
+  const token = authHeader.substring(7);
+  try {
+    return verifyToken(token);
+  } catch {
     return null;
   }
-
-  const token = authHeader.substring(7);
-  return verifyToken(token);
 }
 
 export async function GET(request: NextRequest) {
   try {
     const payload = await getTokenPayload(request);
-    if (!payload?.doctorId) {
+
+    // If unauthenticated -> only return public questionnaires (no sensitive data)
+    if (!payload) {
+      const all = await prisma.questionnaireTemplate.findMany({ orderBy: { createdAt: 'desc' } });
+      // Fallback filtering: some generated client might not yet have isPublic typed
+      const publicQs = (all as any[]).filter(q => (q as any).isPublic);
+      return NextResponse.json(publicQs);
+    }
+
+    // Respondent: boleh melihat hanya public questionnaires
+    if (payload.role === 'RESPONDENT') {
+      const all = await prisma.questionnaireTemplate.findMany({ orderBy: { createdAt: 'desc' } });
+      const respondentQs = (all as any[]).filter(q => (q as any).isPublic);
+      return NextResponse.json(respondentQs);
+    }
+
+    // Doctor path
+    if (!payload.doctorId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
     const doctor = await prisma.doctor.findUnique({ where: { id: payload.doctorId } });
     if (!doctor) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    // Dapatkan kuesioner berdasarkan role
+    const whereClause = { doctorId: doctor.id } as const;
+
     const questionnaires = await prisma.questionnaireTemplate.findMany({
-      where: {
-        doctorId: doctor.id
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
+      where: whereClause,
+      orderBy: { createdAt: 'desc' }
     });
 
     return NextResponse.json(questionnaires);
   } catch (error) {
-    console.error('Get questionnaires error:', error);
+    console.error('Get questionnaires error:', error instanceof Error ? error.message : error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -70,13 +87,15 @@ export async function POST(request: NextRequest) {
         jenis_kuesioner,
         questions,
         resultTiers,
+        // Cast isPublic only if field exists; if not present in generated client ignore via spread trick
+        ...(typeof isPublic !== 'undefined' ? { isPublic: !!isPublic } : {}),
         doctorId: doctor.id
       }
     });
 
     return NextResponse.json(questionnaire);
   } catch (error) {
-    console.error('Create questionnaire error:', error);
+    console.error('Create questionnaire error:', error instanceof Error ? error.message : error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
