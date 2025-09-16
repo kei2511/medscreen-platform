@@ -216,6 +216,14 @@ export default function Dashboard() {
             </div>
             <div className="flex items-center space-x-2 sm:space-x-4">
               <span className="text-xs sm:text-sm text-black hidden sm:block">Halo, {doctorName || 'Dokter'}</span>
+              {canViewAllPatients && (
+                <button
+                  onClick={() => router.push('/admin/results')}
+                  className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                >
+                  Semua Hasil
+                </button>
+              )}
               <button
                 onClick={handleLogout}
                 className="text-xs sm:text-sm text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
