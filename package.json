@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
   "vercel-build": "prisma generate && prisma migrate deploy && next build",
-  "seed": "node prisma/seed.cjs"
+  "seed": "node prisma/seed.cjs",
+  "import:questionnaires": "ts-node --transpile-only scripts/import-questionnaires.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.12.0",
@@ -33,6 +34,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.4.4",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "ts-node": "^10.9.2"
   }
 }

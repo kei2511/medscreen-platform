@@ -1,0 +1,25 @@
+{
+  "_comment": "Salin file ini menjadi questionnaires-import.json lalu isi array templates di bawah dengan data export dari branch backup Anda.",
+  "templates": [
+    {
+      "title": "Contoh Judul",
+      "description": "Deskripsi opsional",
+      "jenis_kuesioner": "Pasien",
+      "isPublic": false,
+      "questions": [
+        {
+          "type": "single",
+          "text": "Pertanyaan contoh?",
+          "options": [
+            { "label": "Tidak Pernah", "score": 0 },
+            { "label": "Kadang-kadang", "score": 1 }
+          ]
+        }
+      ],
+      "resultTiers": [
+        { "min": 0, "max": 2, "label": "Ringan", "recommendation": "Saran..." },
+        { "min": 3, "max": 5, "label": "Sedang", "recommendation": "Saran..." }
+      ]
+    }
+  ]
+}
