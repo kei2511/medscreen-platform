@@ -110,24 +110,23 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    let questionnaire: any = null;
     try {
-      questionnaire = await prisma.questionnaireTemplate.findUnique({
-        where: {
-          id: params.id,
-          doctorId: payload.doctorId
-        }
+      // First try to get own questionnaire
+      const own = await prisma.questionnaireTemplate.findFirst({
+        where: { id: params.id, doctorId: payload.doctorId }
       });
+      if (own) return NextResponse.json(own);
+
+      // If not owned, allow access if public
+      const pub = await prisma.questionnaireTemplate.findUnique({ where: { id: params.id } });
+      if (pub && (pub as any).isPublic) {
+        return NextResponse.json(pub);
+      }
+      return NextResponse.json({ error: 'Questionnaire not found' }, { status: 404 });
     } catch (err) {
       console.error('GET questionnaire doctor lookup error:', err);
       return NextResponse.json({ error: 'Internal server error (QID2)' }, { status: 500 });
     }
-
-    if (!questionnaire) {
-      return NextResponse.json({ error: 'Questionnaire not found' }, { status: 404 });
-    }
-
-    return NextResponse.json(questionnaire);
   } catch (error) {
     console.error('Get questionnaire error:', error);
     return NextResponse.json(
