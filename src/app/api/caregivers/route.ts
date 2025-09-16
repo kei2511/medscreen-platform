@@ -10,25 +10,41 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const doctor = await verifyToken(token);
-    if (!doctor) {
+    const doctorPayload = await verifyToken(token);
+    if (!doctorPayload) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
+    let doctorRecord: any = null;
+    try {
+      doctorRecord = await prisma.doctor.findUnique({ where: { id: doctorPayload.doctorId } });
+    } catch (e) {
+      console.error('Doctor lookup failed', e);
+    }
+    const isAdmin = doctorRecord && doctorRecord.role === 'ADMIN';
+
+    const whereClause: any = isAdmin ? {} : { doctorId: doctorPayload.doctorId };
+
     const caregivers = await prisma.caregiver.findMany({
-      where: { doctorId: doctor.doctorId },
+      where: whereClause,
       include: {
         patients: {
-          select: {
-            id: true,
-            name: true
-          }
-        }
+          select: { id: true, name: true }
+        },
+        ...(isAdmin ? { doctor: true } : {})
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: 'desc' }
     });
 
-    return NextResponse.json(caregivers);
+    const enriched = isAdmin
+      ? caregivers.map((c: any) => ({
+          ...c,
+          doctorName: c.doctor?.name || null,
+          doctorEmail: c.doctor?.email || null
+        }))
+      : caregivers;
+
+    return NextResponse.json(enriched);
   } catch (error) {
     console.error('Error fetching caregivers:', error);
     return NextResponse.json(
@@ -82,7 +98,8 @@ export async function POST(request: NextRequest) {
         jenis_kelamin,
         umur_keluarga,
         hubungan_dengan_pasien,
-        doctorId: doctor.doctorId,
+        // doctorId is required (non-null); token payload for doctor must include doctorId
+        doctorId: doctor.doctorId as string,
       },
     });
 

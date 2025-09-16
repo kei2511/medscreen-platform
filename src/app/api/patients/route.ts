@@ -18,26 +18,43 @@ export async function GET(request: NextRequest) {
     if (!doctor) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    // Determine if caller is admin doctor by fetching doctor record
+    let doctorRecord: any = null;
+    try {
+      doctorRecord = await prisma.doctor.findUnique({ where: { id: doctor.doctorId } });
+    } catch (e) {
+      console.error('Doctor lookup failed', e);
+    }
+
+    const isAdmin = doctorRecord && doctorRecord.role === 'ADMIN';
+
+    const whereClause: any = isAdmin ? {} : { doctorId: doctor.doctorId };
 
     const patients = await prisma.patient.findMany({
-      where: { doctorId: doctor.doctorId },
+      where: whereClause,
       include: {
         caregiver: true,
         results: {
           include: {
             template: true
           },
-          orderBy: {
-            date: 'desc'
-          }
-        }
+          orderBy: { date: 'desc' }
+        },
+        ...(isAdmin ? { doctor: true } : {})
       },
-      orderBy: {
-        createdAt: 'desc'
-      }
+      orderBy: { createdAt: 'desc' }
     });
 
-    return NextResponse.json(patients);
+    // For admin, augment with doctorName for easier frontend use
+    const enriched = isAdmin
+      ? patients.map((p: any) => ({
+          ...p,
+          doctorName: p.doctor?.name || null,
+          doctorEmail: p.doctor?.email || null
+        }))
+      : patients;
+
+    return NextResponse.json(enriched);
   } catch (error) {
     console.error('Get patients error:', error);
     return NextResponse.json(
@@ -122,7 +139,7 @@ export async function POST(request: NextRequest) {
         lama_menderita_dm: lama_menderita_dm ? parseFloat(lama_menderita_dm) : null,
         penyakit_lain: penyakit_lain || null,
         caregiverId: caregiverId || null,
-        doctorId: doctor.doctorId
+        doctorId: doctor.doctorId as string
       },
       include: {
         caregiver: true
