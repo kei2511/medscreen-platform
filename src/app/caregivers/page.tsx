@@ -214,6 +214,12 @@ export default function CaregiversPage() {
                       </div>
                       <div className="flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0">
                         <button
+                          onClick={() => router.push(`/caregivers/${caregiver.id}/history`)}
+                          className="text-green-600 hover:text-green-800 text-sm px-2 py-1 rounded hover:bg-green-50 transition-colors text-left sm:text-center"
+                        >
+                          Riwayat
+                        </button>
+                        <button
                           onClick={() => router.push(`/caregivers/${caregiver.id}/edit`)}
                           className="text-blue-600 hover:text-blue-800 text-sm px-2 py-1 rounded hover:bg-blue-50 transition-colors text-left sm:text-center"
                         >
