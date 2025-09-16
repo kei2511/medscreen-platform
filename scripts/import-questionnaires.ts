@@ -42,6 +42,7 @@ async function main() {
   let doctorArg: string | undefined;
   let mode: 'skip' | 'upsert' | 'force' = 'skip';
   let dryRun = false;
+  let customFile: string | undefined;
 
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
@@ -52,6 +53,8 @@ async function main() {
       if (m === 'skip' || m === 'upsert' || m === 'force') mode = m; else throw new Error('Mode harus salah satu: skip|upsert|force');
     } else if (a === '--dry-run') {
       dryRun = true;
+    } else if (a === '--file') {
+      customFile = args[++i];
     }
   }
 
@@ -65,12 +68,32 @@ async function main() {
   });
   if (!doctor) throw new Error('Doctor tidak ditemukan untuk argumen: ' + doctorArg);
 
-  const filePath = path.join(process.cwd(), 'data', 'questionnaires-import.json');
-  if (!fs.existsSync(filePath)) {
-    throw new Error('File data/questionnaires-import.json tidak ditemukan. Copy dari questionnaires-import.example.json dan isi data.');
+  // Determine file path precedence:
+  // 1) --file path explicit
+  // 2) data/questionnaires-import.json
+  // 3) QuestionnaireTemplate.json di root (fallback)
+  let chosenPath: string | null = null;
+  if (customFile) {
+    const abs = path.isAbsolute(customFile) ? customFile : path.join(process.cwd(), customFile);
+    if (!fs.existsSync(abs)) throw new Error('File yang ditentukan di --file tidak ditemukan: ' + abs);
+    chosenPath = abs;
+  } else {
+    const candidateData = path.join(process.cwd(), 'data', 'questionnaires-import.json');
+    const candidateRoot = path.join(process.cwd(), 'QuestionnaireTemplate.json');
+    if (fs.existsSync(candidateData)) {
+      chosenPath = candidateData;
+    } else if (fs.existsSync(candidateRoot)) {
+      console.log('Peringatan: menggunakan fallback QuestionnaireTemplate.json di root. (Disarankan salin ke data/questionnaires-import.json)');
+      chosenPath = candidateRoot;
+    }
   }
 
-  const raw = fs.readFileSync(filePath, 'utf8');
+  if (!chosenPath) {
+    throw new Error('Tidak menemukan file import. Sediakan salah satu: --file <path> ATAU data/questionnaires-import.json ATAU QuestionnaireTemplate.json (root).');
+  }
+
+  console.log('Memuat file import:', chosenPath);
+  const raw = fs.readFileSync(chosenPath, 'utf8');
   let parsedAny: any;
   try {
     parsedAny = JSON.parse(raw);
@@ -97,6 +120,10 @@ async function main() {
   console.log('Doctor target:', doctor.email, '(', doctor.id, ')');
   console.log('Mode:', mode, '| Dry-run:', dryRun);
   console.log('Jumlah templates input:', templates.length);
+  if (templates.length === 1 && templates[0].title === 'Contoh Judul') {
+    console.log('Peringatan: Sepertinya Anda masih memakai file contoh (example). Tidak akan di-import. Keluar.');
+    return;
+  }
 
   let created = 0;
   let updated = 0;
