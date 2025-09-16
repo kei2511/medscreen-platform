@@ -25,18 +25,20 @@ export async function POST(request: NextRequest) {
     }
 
     const token = generateToken({
-  doctorId: doctor.id,
-  email: doctor.email,
-  role: 'DOCTOR'
-    });
+      doctorId: doctor.id,
+      email: doctor.email,
+      role: 'DOCTOR', // high-level principal type
+      // embed application-level role (ADMIN/USER) for convenience
+      appRole: (doctor as any).role || 'USER'
+    } as any);
 
     return NextResponse.json({
       token,
       doctor: {
-  id: doctor.id,
-  email: doctor.email,
-  name: doctor.name,
-  role: 'DOCTOR'
+        id: doctor.id,
+        email: doctor.email,
+        name: doctor.name,
+        role: (doctor as any).role || 'USER'
       }
     });
   } catch (error) {

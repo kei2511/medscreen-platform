@@ -78,6 +78,11 @@ async function main() {
   console.log('Seeding start...');
   const existingDoctor = await prisma.doctor.findFirst();
   if (existingDoctor) {
+    // Promote first doctor to ADMIN if not already
+    if (!existingDoctor.role || existingDoctor.role !== 'ADMIN') {
+      await prisma.doctor.update({ where: { id: existingDoctor.id }, data: { role: 'ADMIN' } });
+      console.log('Promoted existing first doctor to ADMIN');
+    }
     console.log('Doctor already exists, using doctorId =', existingDoctor.id);
     await seedTemplates(existingDoctor.id);
     return;
@@ -87,7 +92,8 @@ async function main() {
     data: {
       email: 'system@local.test',
       password: passwordHash,
-      name: 'System Doctor'
+      name: 'System Doctor',
+      role: 'ADMIN'
     }
   });
   console.log('Doctor created:', doctor.id);

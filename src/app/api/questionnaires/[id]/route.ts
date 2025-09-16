@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
-import { requireRole, isAdmin } from '@/lib/roleCheck';
 
-async function getDoctorFromRequest(request: NextRequest) {
+async function getTokenPayload(request: NextRequest) {
   const authHeader = request.headers.get('Authorization');
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return null;
@@ -18,13 +17,13 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const doctor = await getDoctorFromRequest(request);
-    if (!doctor) {
+    const payload = await getTokenPayload(request);
+    if (!payload?.doctorId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    // Hanya admin yang bisa mengedit kuesioner
-    if (doctor.role !== 'ADMIN') {
+    const doctor = await prisma.doctor.findUnique({ where: { id: payload.doctorId } });
+    if (!doctor) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if ((doctor as any).role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden. Only admin can edit questionnaires.' }, { status: 403 });
     }
 
@@ -43,7 +42,7 @@ export async function PUT(
     const existingQuestionnaire = await prisma.questionnaireTemplate.findUnique({
       where: { 
         id: params.id,
-        doctorId: doctor.doctorId
+        doctorId: payload.doctorId
       }
     });
 
@@ -81,15 +80,15 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const doctor = await getDoctorFromRequest(request);
-    if (!doctor) {
+    const payload = await getTokenPayload(request);
+    if (!payload?.doctorId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const questionnaire = await prisma.questionnaireTemplate.findUnique({
       where: { 
         id: params.id,
-        doctorId: doctor.doctorId
+        doctorId: payload.doctorId
       }
     });
 
@@ -115,16 +114,14 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const doctor = await getDoctorFromRequest(request);
-    if (!doctor) {
+    const payload = await getTokenPayload(request);
+    if (!payload?.doctorId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    // Check if questionnaire exists and belongs to the doctor
     const questionnaire = await prisma.questionnaireTemplate.findUnique({
       where: { 
         id: params.id,
-        doctorId: doctor.doctorId
+        doctorId: payload.doctorId
       }
     });
 
