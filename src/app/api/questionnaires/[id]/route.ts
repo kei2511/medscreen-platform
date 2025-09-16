@@ -81,22 +81,49 @@ export async function GET(
 ) {
   try {
     const payload = await getTokenPayload(request);
-    if (!payload?.doctorId) {
+
+    // Unauthenticated / respondent: only allow public questionnaire by id
+    if (!payload || payload.role === 'RESPONDENT') {
+      let q: any = null;
+      try {
+        q = await prisma.questionnaireTemplate.findUnique({ where: { id: params.id } });
+      } catch (err) {
+        console.error('GET questionnaire public lookup error:', err);
+        return NextResponse.json({ error: 'Internal server error (QID1)' }, { status: 500 });
+      }
+      if (!q) return NextResponse.json({ error: 'Questionnaire not found' }, { status: 404 });
+      // Only return if isPublic = true when property exists
+      if (Object.prototype.hasOwnProperty.call(q, 'isPublic')) {
+        if (!(q as any).isPublic) {
+          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+      } else {
+        // If column not present (schema mismatch) we err on the side of denying access
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      return NextResponse.json(q);
+    }
+
+    // Doctor flow: require doctorId and ownership
+    if (!payload.doctorId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const questionnaire = await prisma.questionnaireTemplate.findUnique({
-      where: { 
-        id: params.id,
-        doctorId: payload.doctorId
-      }
-    });
+    let questionnaire: any = null;
+    try {
+      questionnaire = await prisma.questionnaireTemplate.findUnique({
+        where: {
+          id: params.id,
+          doctorId: payload.doctorId
+        }
+      });
+    } catch (err) {
+      console.error('GET questionnaire doctor lookup error:', err);
+      return NextResponse.json({ error: 'Internal server error (QID2)' }, { status: 500 });
+    }
 
     if (!questionnaire) {
-      return NextResponse.json(
-        { error: 'Questionnaire not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Questionnaire not found' }, { status: 404 });
     }
 
     return NextResponse.json(questionnaire);
