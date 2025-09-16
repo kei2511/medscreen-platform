@@ -39,8 +39,8 @@ export async function PUT(
     }
 
     // Verify the questionnaire belongs to the doctor
-    const existingQuestionnaire = await prisma.questionnaireTemplate.findUnique({
-      where: { 
+    const existingQuestionnaire = await prisma.questionnaireTemplate.findFirst({
+      where: {
         id: params.id,
         doctorId: payload.doctorId
       }
@@ -62,7 +62,8 @@ export async function PUT(
         jenis_kuesioner,
         questions: questions as any,
         resultTiers: resultTiers as any,
-      },
+        ...(typeof isPublic === 'boolean' ? { isPublic } : {})
+      }
     });
 
     return NextResponse.json(updatedQuestionnaire);
