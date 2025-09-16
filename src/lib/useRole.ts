@@ -3,9 +3,11 @@ import { jwtDecode } from 'jwt-decode';
 import { getAuthToken } from './auth';
 
 interface DecodedToken {
-  doctorId: string;
+  doctorId?: string;
+  respondentId?: string;
   email: string;
-  role: 'ADMIN' | 'USER';
+  role: 'DOCTOR' | 'RESPONDENT' | 'ADMIN' | 'USER';
+  appRole?: 'ADMIN' | 'USER';
 }
 
 export function useRole() {
@@ -20,10 +22,10 @@ export function useRole() {
 
     try {
       const decoded = jwtDecode<DecodedToken>(token);
-      if (decoded && (decoded.role === 'ADMIN' || decoded.role === 'USER')) {
-        setRole(decoded.role);
+      const effective = decoded.appRole || (decoded.role === 'ADMIN' || decoded.role === 'USER' ? decoded.role : undefined);
+      if (effective === 'ADMIN' || effective === 'USER') {
+        setRole(effective);
       } else {
-        console.error('Invalid role in token:', decoded);
         setRole(null);
       }
     } catch (error) {
