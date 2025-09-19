@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAuthToken } from '@/lib/auth';
+import { useRole } from '@/lib/useRole';
 
 interface Caregiver {
   id: string;
@@ -10,11 +11,10 @@ interface Caregiver {
   jenis_kelamin: number;
   umur_keluarga: number;
   hubungan_dengan_pasien: string;
-  patients: {
-    id: string;
-    name: string;
-  }[];
+  patients: { id: string; name: string }[];
   createdAt: string;
+  doctorName?: string | null; // present only for admin global view
+  doctorEmail?: string | null; // present only for admin global view
 }
 
 export default function CaregiversPage() {
@@ -23,6 +23,7 @@ export default function CaregiversPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const router = useRouter();
+  const { isAdmin } = useRole();
 
   useEffect(() => {
     fetchCaregivers();
@@ -142,7 +143,7 @@ export default function CaregiversPage() {
         <div className="bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900">
-              Caregiver ({caregivers.length})
+              {isAdmin ? 'Semua Caregiver' : 'Caregiver'} ({caregivers.length})
             </h2>
           </div>
           
@@ -166,6 +167,27 @@ export default function CaregiversPage() {
                         <h3 className="font-medium text-gray-900 truncate">
                           {caregiver.nama_keluarga}
                         </h3>
+                        {isAdmin && (
+                          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+                            {caregiver.doctorName && (
+                              <span className="inline-flex items-center gap-1 bg-purple-100 text-purple-800 px-2 py-0.5 rounded">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
+                                  <path d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-1 1v3a6 6 0 0012 0V8a1 1 0 00-1-1h-1V6a4 4 0 00-4-4z" />
+                                </svg>
+                                {caregiver.doctorName}
+                              </span>
+                            )}
+                            {caregiver.doctorEmail && (
+                              <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
+                                  <path d="M1.5 8.67v8.58A2.25 2.25 0 003.75 19.5h16.5a2.25 2.25 0 002.25-2.25V8.67l-8.954 5.59a3.75 3.75 0 01-3.292 0L1.5 8.67z" />
+                                  <path d="M22.5 6.908V6.75A2.25 2.25 0 0020.25 4.5H3.75A2.25 2.25 0 001.5 6.75v.158l9.318 5.814a2.25 2.25 0 002.364 0L22.5 6.908z" />
+                                </svg>
+                                {caregiver.doctorEmail}
+                              </span>
+                            )}
+                          </div>
+                        )}
                         <div className="mt-1 text-sm text-gray-600 space-y-1">
                           <p>
                             Jenis Kelamin: {caregiver.jenis_kelamin === 1 ? 'Laki-laki' : 'Perempuan'}
@@ -191,6 +213,12 @@ export default function CaregiversPage() {
                         )}
                       </div>
                       <div className="flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0">
+                        <button
+                          onClick={() => router.push(`/caregivers/${caregiver.id}/history`)}
+                          className="text-green-600 hover:text-green-800 text-sm px-2 py-1 rounded hover:bg-green-50 transition-colors text-left sm:text-center"
+                        >
+                          Riwayat
+                        </button>
                         <button
                           onClick={() => router.push(`/caregivers/${caregiver.id}/edit`)}
                           className="text-blue-600 hover:text-blue-800 text-sm px-2 py-1 rounded hover:bg-blue-50 transition-colors text-left sm:text-center"

@@ -10,8 +10,11 @@ function getJwtSecret(): string {
 }
 
 export interface TokenPayload {
-  doctorId: string;
   email: string;
+  role: 'DOCTOR' | 'RESPONDENT'; // principal type
+  doctorId?: string;
+  respondentId?: string;
+  appRole?: 'USER' | 'ADMIN'; // application-level role for doctor accounts
 }
 
 export function generateToken(payload: TokenPayload): string {
@@ -22,10 +25,13 @@ export function verifyToken(token: string): TokenPayload | null {
   try {
     const decoded = jwt.verify(token, getJwtSecret()) as jwt.JwtPayload;
     return {
-      doctorId: decoded.doctorId as string,
-      email: decoded.email as string
+      email: decoded.email as string,
+      role: decoded.role as 'DOCTOR' | 'RESPONDENT',
+      doctorId: decoded.doctorId as string | undefined,
+      respondentId: decoded.respondentId as string | undefined,
+      appRole: decoded.appRole as 'USER' | 'ADMIN' | undefined
     };
-  } catch (error) {
+  } catch {
     return null;
   }
 }

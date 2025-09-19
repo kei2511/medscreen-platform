@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     const patientId = searchParams.get('patientId');
     const caregiverId = searchParams.get('caregiverId');
 
-    let whereClause: any = { doctorId: doctor.doctorId };
+    let whereClause: any = {};
     if (patientId) {
       whereClause.patientId = patientId;
     }

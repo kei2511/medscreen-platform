@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { hashPassword, verifyPassword, generateToken } from '@/lib/auth';
+import { verifyPassword, generateToken } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,15 +26,19 @@ export async function POST(request: NextRequest) {
 
     const token = generateToken({
       doctorId: doctor.id,
-      email: doctor.email
-    });
+      email: doctor.email,
+      role: 'DOCTOR', // high-level principal type
+      // embed application-level role (ADMIN/USER) for convenience
+      appRole: (doctor as any).role || 'USER'
+    } as any);
 
     return NextResponse.json({
       token,
       doctor: {
         id: doctor.id,
         email: doctor.email,
-        name: doctor.name
+        name: doctor.name,
+        role: (doctor as any).role || 'USER'
       }
     });
   } catch (error) {

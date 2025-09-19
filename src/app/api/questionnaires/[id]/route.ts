@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 
-async function getDoctorFromRequest(request: NextRequest) {
+async function getTokenPayload(request: NextRequest) {
   const authHeader = request.headers.get('Authorization');
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return null;
@@ -17,13 +17,18 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const doctor = await getDoctorFromRequest(request);
-    if (!doctor) {
+    const payload = await getTokenPayload(request);
+    if (!payload?.doctorId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const doctor = await prisma.doctor.findUnique({ where: { id: payload.doctorId } });
+    if (!doctor) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if ((doctor as any).role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Forbidden. Only admin can edit questionnaires.' }, { status: 403 });
     }
 
     const body = await request.json();
-    const { title, description, jenis_kuesioner, questions, resultTiers } = body;
+    const { title, description, jenis_kuesioner, questions, resultTiers, isPublic } = body;
 
     // Validate input
     if (!title || !Array.isArray(questions) || !Array.isArray(resultTiers) || !jenis_kuesioner) {
@@ -34,10 +39,10 @@ export async function PUT(
     }
 
     // Verify the questionnaire belongs to the doctor
-    const existingQuestionnaire = await prisma.questionnaireTemplate.findUnique({
-      where: { 
+    const existingQuestionnaire = await prisma.questionnaireTemplate.findFirst({
+      where: {
         id: params.id,
-        doctorId: doctor.doctorId
+        doctorId: payload.doctorId
       }
     });
 
@@ -57,7 +62,8 @@ export async function PUT(
         jenis_kuesioner,
         questions: questions as any,
         resultTiers: resultTiers as any,
-      },
+        ...(typeof isPublic === 'boolean' ? { isPublic } : {})
+      }
     });
 
     return NextResponse.json(updatedQuestionnaire);
@@ -75,26 +81,52 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const doctor = await getDoctorFromRequest(request);
-    if (!doctor) {
+    const payload = await getTokenPayload(request);
+
+    // Unauthenticated / respondent: only allow public questionnaire by id
+    if (!payload || payload.role === 'RESPONDENT') {
+      let q: any = null;
+      try {
+        q = await prisma.questionnaireTemplate.findUnique({ where: { id: params.id } });
+      } catch (err) {
+        console.error('GET questionnaire public lookup error:', err);
+        return NextResponse.json({ error: 'Internal server error (QID1)' }, { status: 500 });
+      }
+      if (!q) return NextResponse.json({ error: 'Questionnaire not found' }, { status: 404 });
+      // Only return if isPublic = true when property exists
+      if (Object.prototype.hasOwnProperty.call(q, 'isPublic')) {
+        if (!(q as any).isPublic) {
+          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+      } else {
+        // If column not present (schema mismatch) we err on the side of denying access
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      return NextResponse.json(q);
+    }
+
+    // Doctor flow: require doctorId and ownership
+    if (!payload.doctorId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const questionnaire = await prisma.questionnaireTemplate.findUnique({
-      where: { 
-        id: params.id,
-        doctorId: doctor.doctorId
+    try {
+      // First try to get own questionnaire
+      const own = await prisma.questionnaireTemplate.findFirst({
+        where: { id: params.id, doctorId: payload.doctorId }
+      });
+      if (own) return NextResponse.json(own);
+
+      // If not owned, allow access if public
+      const pub = await prisma.questionnaireTemplate.findUnique({ where: { id: params.id } });
+      if (pub && (pub as any).isPublic) {
+        return NextResponse.json(pub);
       }
-    });
-
-    if (!questionnaire) {
-      return NextResponse.json(
-        { error: 'Questionnaire not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Questionnaire not found' }, { status: 404 });
+    } catch (err) {
+      console.error('GET questionnaire doctor lookup error:', err);
+      return NextResponse.json({ error: 'Internal server error (QID2)' }, { status: 500 });
     }
-
-    return NextResponse.json(questionnaire);
   } catch (error) {
     console.error('Get questionnaire error:', error);
     return NextResponse.json(
@@ -109,16 +141,14 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const doctor = await getDoctorFromRequest(request);
-    if (!doctor) {
+    const payload = await getTokenPayload(request);
+    if (!payload?.doctorId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    // Check if questionnaire exists and belongs to the doctor
     const questionnaire = await prisma.questionnaireTemplate.findUnique({
       where: { 
         id: params.id,
-        doctorId: doctor.doctorId
+        doctorId: payload.doctorId
       }
     });
 

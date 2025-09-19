@@ -5,6 +5,7 @@ A web application designed for healthcare professionals to manage and conduct di
 ## 🏥 Overview
 
 SiCarAbet (Sistem Caring for Diabetes) is a secure, user-friendly web application that enables doctors to:
+
 - Create customizable health screening questionnaires
 - Manage patient data and screening history
 - Conduct digital screenings with automated scoring
@@ -14,6 +15,7 @@ SiCarAbet (Sistem Caring for Diabetes) is a secure, user-friendly web applicatio
 ## 🚀 Features
 
 ### Core Functionality
+
 - **Dynamic Questionnaire Builder**: Create custom questionnaires with multiple-choice questions and flexible scoring
 - **Patient Management**: Add, view, and manage patient profiles with complete screening history
 - **Digital Screening Process**: Step-by-step guided screening with progress tracking
@@ -21,8 +23,10 @@ SiCarAbet (Sistem Caring for Diabetes) is a secure, user-friendly web applicatio
 - **Result Analysis**: Detailed results with risk categorization and recommendations
 - **Data Export**: Export all screening data to CSV format for analysis
 - **Secure Authentication**: JWT-based authentication system with password hashing
+ - **Respondent Mode**: Responden (pasien/caregiver mandiri) dapat registrasi sendiri dan mengisi kuesioner
 
 ### Technical Features
+
 - **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
 - **Clean UI/UX**: Professional medical interface with calming color scheme
 - **Real-time Updates**: Instant data synchronization across components
@@ -46,22 +50,26 @@ SiCarAbet (Sistem Caring for Diabetes) is a secure, user-friendly web applicatio
 ## 🚀 Quick Start
 
 1. **Clone and Navigate to Project**:
+
    ```bash
    cd medscreen-platform
    ```
 
 2. **Install Dependencies**:
+
    ```bash
    npm install
    ```
 
 3. **Database Setup**:
    The database is already initialized with the schema. If you need to reset:
+
    ```bash
    npx prisma migrate reset
    ```
 
 4. **Start Development Server**:
+
    ```bash
    npm run dev
    ```
@@ -72,21 +80,30 @@ SiCarAbet (Sistem Caring for Diabetes) is a secure, user-friendly web applicatio
 ## 📖 Usage Guide
 
 ### 1. Registration & Login
+
 - New doctors can register with email, password, and name
 - Existing doctors can login with credentials
 - Secure password hashing with bcrypt
+ - Respondent self-service: buka `/respondent/register` untuk membuat akun responden (isi data baseline pasien & optional caregiver). Setelah login, responden dapat:
+    * Melihat daftar kuesioner
+    * Memilih mengisi sebagai Pasien atau Caregiver (jika template mendukung keduanya)
+    * Mengirim jawaban & melihat hasil skor
+    * Melihat riwayat pengisian di `/respondent/results`
 
 ### 2. Dashboard Overview
+
 - View doctor's name and quick stats
 - Access patient management and questionnaire templates
 - Quick navigation to all features
 
 ### 3. Patient Management
+
 - **Add New Patient**: Click "Tambah Pasien Baru" and fill name and age
 - **View Patient History**: Click "Lihat Riwayat" to see all screenings
 - **Start New Screening**: Click "Mulai Skrining Baru" for any patient
 
 ### 4. Questionnaire Builder
+
 - **Create New**: Click "Buat Kuesioner Baru"
 - **Add Questions**: Dynamic form for questions and multiple-choice answers
 - **Set Scoring**: Each option has configurable score values
@@ -94,6 +111,7 @@ SiCarAbet (Sistem Caring for Diabetes) is a secure, user-friendly web applicatio
 - **Save Template**: Store for future use across all patients
 
 ### 5. Screening Process
+
 - **Select Template**: Choose from available questionnaires
 - **Select Patient**: Pick patient for screening
 - **Answer Questions**: Step-by-step guided process
@@ -101,6 +119,7 @@ SiCarAbet (Sistem Caring for Diabetes) is a secure, user-friendly web applicatio
 - **Save Results**: Store in patient history with date/time
 
 ### 6. Data Export
+
 - **CSV Export**: Click "Ekspor Semua Data ke CSV" on dashboard
 - **Format**: Includes patient name, age, date, questionnaire, score, and result
 - **Usage**: Download for external analysis or reporting
@@ -120,6 +139,7 @@ The application uses SQLite with the following models:
 - **JWT Tokens**: Secure session management
 - **Input Validation**: Server-side validation for all inputs
 - **Authorization**: Doctor-specific data access
+ - **Role-based Access**: Token memuat role DOCTOR atau RESPONDENT. Middleware memproteksi path `/respondent` & `/api/respondent`.
 - **Data Privacy**: Patient data isolated by doctor
 
 ## 🎨 Design System
@@ -133,6 +153,7 @@ The application uses SQLite with the following models:
 ## 📱 Mobile Support
 
 The application is fully responsive and works on:
+
 - Desktop computers
 - Tablets (iPad, Android tablets)
 - Mobile phones (iOS, Android)
@@ -141,6 +162,7 @@ The application is fully responsive and works on:
 ## 🧪 Testing
 
 ### Manual Testing Checklist
+
 - [ ] User registration and login
 - [ ] Patient creation and management
 - [ ] Questionnaire creation and editing
@@ -152,12 +174,14 @@ The application is fully responsive and works on:
 ## 🚀 Deployment
 
 ### Vercel Deployment
+
 1. Push code to GitHub
 2. Import project on Vercel
 3. Deploy with default settings
 4. Environment variables are pre-configured
 
 ### Environment Variables
+
 ```env
 JWT_SECRET=your-secret-key-change-in-production
 ```
@@ -205,6 +229,7 @@ This project is open source and available under the [MIT License](LICENSE).
 ## 🆘 Support
 
 For support or questions:
+
 - Create an issue on GitHub
 - Check the documentation
 - Review the API endpoints
