@@ -23,7 +23,7 @@ SiCarAbet (Sistem Caring for Diabetes) is a secure, user-friendly web applicatio
 - **Result Analysis**: Detailed results with risk categorization and recommendations
 - **Data Export**: Export all screening data to CSV format for analysis
 - **Secure Authentication**: JWT-based authentication system with password hashing
- - **Respondent Mode**: Responden (pasien/caregiver mandiri) dapat registrasi sendiri dan mengisi kuesioner
+- **Respondent Mode**: Responden (pasien/caregiver mandiri) dapat registrasi sendiri dan mengisi kuesioner
 
 ### Technical Features
 
@@ -84,11 +84,11 @@ SiCarAbet (Sistem Caring for Diabetes) is a secure, user-friendly web applicatio
 - New doctors can register with email, password, and name
 - Existing doctors can login with credentials
 - Secure password hashing with bcrypt
- - Respondent self-service: buka `/respondent/register` untuk membuat akun responden (isi data baseline pasien & optional caregiver). Setelah login, responden dapat:
-    * Melihat daftar kuesioner
-    * Memilih mengisi sebagai Pasien atau Caregiver (jika template mendukung keduanya)
-    * Mengirim jawaban & melihat hasil skor
-    * Melihat riwayat pengisian di `/respondent/results`
+- Respondent self-service: buka `/respondent/register` untuk membuat akun responden (isi data baseline pasien & optional caregiver). Setelah login, responden dapat:
+  - Melihat daftar kuesioner
+  - Memilih mengisi sebagai Pasien atau Caregiver (jika template mendukung keduanya)
+  - Mengirim jawaban & melihat hasil skor
+  - Melihat riwayat pengisian di `/respondent/results`
 
 ### 2. Dashboard Overview
 
@@ -139,7 +139,7 @@ The application uses SQLite with the following models:
 - **JWT Tokens**: Secure session management
 - **Input Validation**: Server-side validation for all inputs
 - **Authorization**: Doctor-specific data access
- - **Role-based Access**: Token memuat role DOCTOR atau RESPONDENT. Middleware memproteksi path `/respondent` & `/api/respondent`.
+- **Role-based Access**: Token memuat role DOCTOR atau RESPONDENT. Middleware memproteksi path `/respondent` & `/api/respondent`.
 - **Data Privacy**: Patient data isolated by doctor
 
 ## 🎨 Design System
