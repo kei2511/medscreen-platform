@@ -146,11 +146,16 @@ export async function DELETE(
     if (!payload?.doctorId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const questionnaire = await prisma.questionnaireTemplate.findUnique({
-      where: { 
-        id: params.id,
-        doctorId: payload.doctorId
-      }
+    
+    const doctor = await prisma.doctor.findUnique({ where: { id: payload.doctorId } });
+    if (!doctor) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    
+    const isAdmin = (doctor as any).role === 'ADMIN';
+    
+    const questionnaire = await prisma.questionnaireTemplate.findFirst({
+      where: isAdmin
+        ? { id: params.id }
+        : { id: params.id, doctorId: payload.doctorId }
     });
 
     if (!questionnaire) {

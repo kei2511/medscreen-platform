@@ -278,7 +278,13 @@ export default function Dashboard() {
                             onClick={() => router.push(`/patient/${patient.id}`)}
                             className="text-blue-600 hover:text-blue-800 text-sm px-2 py-1 rounded hover:bg-blue-50 transition-colors text-left sm:text-center"
                           >
-                            Lihat Riwayat
+                            Lihat Detail
+                          </button>
+                          <button
+                            onClick={() => router.push(`/patients/${patient.id}/edit`)}
+                            className="text-purple-600 hover:text-purple-800 text-sm px-2 py-1 rounded hover:bg-purple-50 transition-colors text-left sm:text-center"
+                          >
+                            Edit Data
                           </button>
                           <button
                             onClick={() => router.push(`/screening/new?patientId=${patient.id}`)}
