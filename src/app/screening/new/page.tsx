@@ -386,6 +386,16 @@ function NewScreeningContent() {
                 </select>
               </div>
 
+              {/* Deskripsi Kuesioner */}
+              {selectedQuestionnaire && selectedQuestionnaire.description && (
+                <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+                  <h3 className="text-sm font-medium text-blue-800 mb-2">Deskripsi Kuesioner:</h3>
+                  <p className="text-sm text-blue-700 leading-relaxed">
+                    {selectedQuestionnaire.description}
+                  </p>
+                </div>
+              )}
+
               {/* Pilih Pasien (jika responden = patient atau kuesioner = Pasien/Keduanya) */}
               {(selectedRespondent === 'patient' || (selectedQuestionnaire && (selectedQuestionnaire.jenis_kuesioner === 'Pasien' || selectedQuestionnaire.jenis_kuesioner === 'Keduanya'))) && (
                 <div>
@@ -432,6 +442,27 @@ function NewScreeningContent() {
                 </div>
               )}
 
+              {/* Ringkasan Skrining */}
+              {selectedQuestionnaire && (selectedPatient || selectedCaregiver) && (
+                <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
+                  <h3 className="text-sm font-medium text-gray-800 mb-3">Ringkasan Skrining:</h3>
+                  <div className="space-y-2 text-sm text-gray-700">
+                    <div><span className="font-medium">Kuesioner:</span> {selectedQuestionnaire.title}</div>
+                    {selectedQuestionnaire.description && (
+                      <div><span className="font-medium">Deskripsi:</span> {selectedQuestionnaire.description}</div>
+                    )}
+                    <div><span className="font-medium">Jenis:</span> {selectedQuestionnaire.jenis_kuesioner || 'Pasien'}</div>
+                    <div><span className="font-medium">Jumlah Pertanyaan:</span> {selectedQuestionnaire.questions.length}</div>
+                    {selectedPatient && (
+                      <div><span className="font-medium">Pasien:</span> {selectedPatient.name} ({selectedPatient.age} tahun)</div>
+                    )}
+                    {selectedCaregiver && (
+                      <div><span className="font-medium">Caregiver:</span> {selectedCaregiver.nama_keluarga} - {selectedCaregiver.hubungan_dengan_pasien}</div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Tombol Konfirmasi/Mulai */}
               <div className="pt-4 border-t">
                 <button
@@ -468,8 +499,8 @@ function NewScreeningContent() {
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-6">
           <div className="flex justify-between items-center h-14 sm:h-16">
-            <div>
-              <h1 className="text-base sm:text-lg font-semibold text-black">{selectedQuestionnaire?.title}</h1>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-base sm:text-lg font-semibold text-black truncate">{selectedQuestionnaire?.title}</h1>
               <p className="text-xs sm:text-sm text-black">
                 {selectedPatient 
                   ? `${selectedPatient.name} (${selectedPatient.age} tahun)`
@@ -478,6 +509,11 @@ function NewScreeningContent() {
                     : ''
                 }
               </p>
+              {selectedQuestionnaire?.description && currentQuestionIndex === 0 && (
+                <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                  {selectedQuestionnaire.description}
+                </p>
+              )}
             </div>
             <button
               onClick={() => {
@@ -494,6 +530,16 @@ function NewScreeningContent() {
       </header>
 
       <div className="max-w-2xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-8">
+        {/* Deskripsi Kuesioner (hanya di pertanyaan pertama) */}
+        {selectedQuestionnaire?.description && currentQuestionIndex === 0 && (
+          <div className="mb-4 sm:mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h2 className="text-sm font-medium text-blue-800 mb-2">Tentang Kuesioner Ini:</h2>
+            <p className="text-sm text-blue-700 leading-relaxed">
+              {selectedQuestionnaire.description}
+            </p>
+          </div>
+        )}
+
         {/* Progress Bar */}
         <div className="mb-4 sm:mb-6">
           <div className="flex justify-between text-xs sm:text-sm text-black mb-1 sm:mb-2">
