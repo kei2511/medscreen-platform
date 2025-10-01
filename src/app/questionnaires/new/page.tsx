@@ -28,6 +28,7 @@ interface ResultTier {
 export default function NewQuestionnaire() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [youtubeUrl, setYoutubeUrl] = useState('');
   const [jenisKuesioner, setJenisKuesioner] = useState<'Pasien' | 'Caregiver' | 'Keduanya'>('Pasien');
   const [questions, setQuestions] = useState<Question[]>([]);
   const [resultTiers, setResultTiers] = useState<ResultTier[]>([]);
@@ -147,6 +148,7 @@ export default function NewQuestionnaire() {
         body: JSON.stringify({
           title,
           description,
+          youtubeUrl,
           jenis_kuesioner: jenisKuesioner,
           questions: questions.map(q => ({
             text: q.text,
@@ -226,6 +228,21 @@ export default function NewQuestionnaire() {
                   rows={3}
                   placeholder="Jelaskan tujuan dan konteks penggunaan kuesioner ini"
                 />
+              </div>
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-black mb-1">
+                  Link Video YouTube (Opsional)
+                </label>
+                <input
+                  type="url"
+                  value={youtubeUrl}
+                  onChange={(e) => setYoutubeUrl(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                  placeholder="https://www.youtube.com/watch?v=... atau https://youtu.be/..."
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Video ini akan ditampilkan pada hasil skrining sebagai panduan untuk pasien/caregiver
+                </p>
               </div>
               <div>
                 <label className="block text-xs sm:text-sm font-medium text-black mb-1">

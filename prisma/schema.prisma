@@ -59,6 +59,7 @@ model QuestionnaireTemplate {
   doctorId              String
   questions             Json
   resultTiers           Json
+  youtubeUrl            String?
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
   jenis_kuesioner       JenisKuesioner         @default(Pasien)

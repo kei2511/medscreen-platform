@@ -26,6 +26,7 @@ interface ScreeningResult {
   };
   template: {
     title: string;
+    youtubeUrl?: string;
     questions: {
       text: string;
       type: 'multiple_choice' | 'multiple_selection' | 'text_input';
@@ -46,6 +47,13 @@ interface ScreeningResult {
     customAnswers?: { [optionIndex: number]: string };
   }[];
 }
+
+// Fungsi untuk mengekstrak YouTube video ID dari URL
+const getYouTubeVideoId = (url: string): string | null => {
+  const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+  const match = url.match(regex);
+  return match ? match[1] : null;
+};
 
 export default function ScreeningResultPage() {
   const [result, setResult] = useState<ScreeningResult | null>(null);
@@ -187,17 +195,41 @@ export default function ScreeningResultPage() {
           <div className="mb-6 sm:mb-8">
             <h3 className="text-base sm:text-lg font-semibold text-black mb-3 sm:mb-4">Anjuran Penanganan</h3>
             <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden shadow-lg">
-              <video
-                controls
-                className="w-full h-full"
-                poster="/images/video-poster.jpg"
-                preload="metadata"
-              >
-                <source src="/videos/Video Test.mp4" type="video/mp4" />
-                <p className="text-black p-4 text-center">
-                  Browser Anda tidak mendukung pemutaran video. Silakan unduh video untuk menonton.
-                </p>
-              </video>
+              {result.template.youtubeUrl ? (
+                // YouTube Video
+                (() => {
+                  const videoId = getYouTubeVideoId(result.template.youtubeUrl);
+                  return videoId ? (
+                    <iframe
+                      src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`}
+                      title="Video Anjuran Penanganan"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      className="w-full h-full"
+                    ></iframe>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <p className="text-gray-500 text-sm text-center px-4">
+                        URL YouTube tidak valid: {result.template.youtubeUrl}
+                      </p>
+                    </div>
+                  );
+                })()
+              ) : (
+                // Fallback ke video lokal
+                <video
+                  controls
+                  className="w-full h-full"
+                  poster="/images/video-poster.jpg"
+                  preload="metadata"
+                >
+                  <source src="/videos/Video Test.mp4" type="video/mp4" />
+                  <p className="text-black p-4 text-center">
+                    Browser Anda tidak mendukung pemutaran video. Silakan unduh video untuk menonton.
+                  </p>
+                </video>
+              )}
             </div>
             <p className="text-sm text-black mt-3">
               Tonton video ini untuk mendapatkan panduan lengkap mengenai anjuran penanganan sesuai dengan hasil skrining pasien.

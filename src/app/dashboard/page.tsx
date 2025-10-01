@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAuthToken, removeAuthToken } from '@/lib/auth';
 import { useRoleBasedAccess } from '@/lib/useRoleBasedAccess';
+import { useRole } from '@/lib/useRole';
 
 interface Patient {
   id: string;
@@ -32,6 +33,7 @@ export default function Dashboard() {
     canEditQuestionnaires,
     canViewAllPatients,
   } = useRoleBasedAccess();
+  const { isUser } = useRole();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [questionnaires, setQuestionnaires] = useState<Questionnaire[]>([]);
   const [doctorName, setDoctorName] = useState('');
@@ -228,7 +230,7 @@ export default function Dashboard() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
+        <div className={`grid grid-cols-1 ${isUser ? 'lg:grid-cols-1' : 'lg:grid-cols-2'} gap-4 sm:gap-8`}>
           {/* Patient Management */}
           <div className="bg-white rounded-lg shadow">
             <div className="px-6 py-4 border-b border-gray-200">
@@ -320,61 +322,63 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Questionnaire Templates */}
-          <div className="bg-white rounded-lg shadow">
-            <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
-              <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold text-black">Template Kuesioner</h2>
-                {canManageQuestionnaires && (
-                  <button
-                    onClick={() => router.push('/questionnaires/new')}
-                    className="bg-green-600 text-white px-3 py-1.5 rounded text-sm hover:bg-green-700 transition-colors"
-                  >
-                    Buat Kuesioner
-                  </button>
+          {/* Questionnaire Templates - hanya tampil untuk ADMIN */}
+          {!isUser && (
+            <div className="bg-white rounded-lg shadow">
+              <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-lg font-semibold text-black">Template Kuesioner</h2>
+                  {canManageQuestionnaires && (
+                    <button
+                      onClick={() => router.push('/questionnaires/new')}
+                      className="bg-green-600 text-white px-3 py-1.5 rounded text-sm hover:bg-green-700 transition-colors"
+                    >
+                      Buat Kuesioner
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div className="p-4 sm:p-6">
+                {questionnaires.length === 0 ? (
+                  <p className="text-black text-center py-6 sm:py-8 text-sm sm:text-base">Belum ada kuesioner dibuat</p>
+                ) : (
+                  <div className="space-y-3">
+                    {questionnaires.map((questionnaire) => (
+                      <div key={questionnaire.id} className="border rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
+                        <h3 className="font-semibold text-black text-sm sm:text-base">{questionnaire.title}</h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs sm:text-sm text-black">
+                            {questionnaire.questions.length} pertanyaan
+                          </span>
+                          <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                            {questionnaire.jenis_kuesioner || 'Pasien'}
+                          </span>
+                        </div>
+                        <div className="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-2 mt-2">
+                          {canEditQuestionnaires && (
+                            <button
+                              onClick={() => router.push(`/questionnaires/${questionnaire.id}/edit`)}
+                              className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                            >
+                              Edit Kuesioner
+                            </button>
+                          )}
+                          {canDeleteRecords && (
+                            <button
+                              onClick={() => handleDeleteQuestionnaire(questionnaire.id, questionnaire.title)}
+                              className="text-xs sm:text-sm text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                            >
+                              Hapus
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>
-            <div className="p-4 sm:p-6">
-              {questionnaires.length === 0 ? (
-                <p className="text-black text-center py-6 sm:py-8 text-sm sm:text-base">Belum ada kuesioner dibuat</p>
-              ) : (
-                <div className="space-y-3">
-                  {questionnaires.map((questionnaire) => (
-                    <div key={questionnaire.id} className="border rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
-                      <h3 className="font-semibold text-black text-sm sm:text-base">{questionnaire.title}</h3>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs sm:text-sm text-black">
-                          {questionnaire.questions.length} pertanyaan
-                        </span>
-                        <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
-                          {questionnaire.jenis_kuesioner || 'Pasien'}
-                        </span>
-                      </div>
-                      <div className="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-2 mt-2">
-                        {canEditQuestionnaires && (
-                          <button
-                            onClick={() => router.push(`/questionnaires/${questionnaire.id}/edit`)}
-                            className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition-colors"
-                          >
-                            Edit Kuesioner
-                          </button>
-                        )}
-                        {canDeleteRecords && (
-                          <button
-                            onClick={() => handleDeleteQuestionnaire(questionnaire.id, questionnaire.title)}
-                            className="text-xs sm:text-sm text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
-                          >
-                            Hapus
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Add Patient Modal */}
