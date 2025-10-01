@@ -510,16 +510,6 @@ function NewScreeningContent() {
                 </select>
               </div>
 
-              {/* Deskripsi Kuesioner */}
-              {selectedQuestionnaire && selectedQuestionnaire.description && (
-                <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-                  <h3 className="text-sm font-medium text-blue-800 mb-2">Deskripsi Kuesioner:</h3>
-                  <p className="text-sm text-blue-700 leading-relaxed">
-                    {selectedQuestionnaire.description}
-                  </p>
-                </div>
-              )}
-
               {/* Pilih Pasien (jika responden = patient atau kuesioner = Pasien/Keduanya) */}
               {(selectedRespondent === 'patient' || (selectedQuestionnaire && (selectedQuestionnaire.jenis_kuesioner === 'Pasien' || selectedQuestionnaire.jenis_kuesioner === 'Keduanya'))) && (
                 <div>
@@ -563,27 +553,6 @@ function NewScreeningContent() {
                       </option>
                     ))}
                   </select>
-                </div>
-              )}
-
-              {/* Ringkasan Skrining */}
-              {selectedQuestionnaire && (selectedPatient || selectedCaregiver) && (
-                <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
-                  <h3 className="text-sm font-medium text-gray-800 mb-3">Ringkasan Skrining:</h3>
-                  <div className="space-y-2 text-sm text-gray-700">
-                    <div><span className="font-medium">Kuesioner:</span> {selectedQuestionnaire.title}</div>
-                    {selectedQuestionnaire.description && (
-                      <div><span className="font-medium">Deskripsi:</span> {selectedQuestionnaire.description}</div>
-                    )}
-                    <div><span className="font-medium">Jenis:</span> {selectedQuestionnaire.jenis_kuesioner || 'Pasien'}</div>
-                    <div><span className="font-medium">Jumlah Pertanyaan:</span> {selectedQuestionnaire.questions.length}</div>
-                    {selectedPatient && (
-                      <div><span className="font-medium">Pasien:</span> {selectedPatient.name} ({selectedPatient.age} tahun)</div>
-                    )}
-                    {selectedCaregiver && (
-                      <div><span className="font-medium">Caregiver:</span> {selectedCaregiver.nama_keluarga} - {selectedCaregiver.hubungan_dengan_pasien}</div>
-                    )}
-                  </div>
                 </div>
               )}
 
