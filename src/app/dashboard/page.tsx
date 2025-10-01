@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAuthToken, removeAuthToken } from '@/lib/auth';
 import { useRoleBasedAccess } from '@/lib/useRoleBasedAccess';
+import { useRole } from '@/lib/useRole';
 
 interface Patient {
   id: string;
@@ -32,6 +33,7 @@ export default function Dashboard() {
     canEditQuestionnaires,
     canViewAllPatients,
   } = useRoleBasedAccess();
+  const { isUser } = useRole();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [questionnaires, setQuestionnaires] = useState<Questionnaire[]>([]);
   const [doctorName, setDoctorName] = useState('');
@@ -336,42 +338,63 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="p-4 sm:p-6">
-              {questionnaires.length === 0 ? (
-                <p className="text-black text-center py-6 sm:py-8 text-sm sm:text-base">Belum ada kuesioner dibuat</p>
-              ) : (
-                <div className="space-y-3">
-                  {questionnaires.map((questionnaire) => (
-                    <div key={questionnaire.id} className="border rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
-                      <h3 className="font-semibold text-black text-sm sm:text-base">{questionnaire.title}</h3>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs sm:text-sm text-black">
-                          {questionnaire.questions.length} pertanyaan
-                        </span>
-                        <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
-                          {questionnaire.jenis_kuesioner || 'Pasien'}
-                        </span>
-                      </div>
-                      <div className="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-2 mt-2">
-                        {canEditQuestionnaires && (
-                          <button
-                            onClick={() => router.push(`/questionnaires/${questionnaire.id}/edit`)}
-                            className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition-colors"
-                          >
-                            Edit Kuesioner
-                          </button>
-                        )}
-                        {canDeleteRecords && (
-                          <button
-                            onClick={() => handleDeleteQuestionnaire(questionnaire.id, questionnaire.title)}
-                            className="text-xs sm:text-sm text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
-                          >
-                            Hapus
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+              {isUser ? (
+                /* Tampilan untuk USER - tidak menampilkan daftar kuesioner */
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-medium text-black mb-2">Template Kuesioner</h3>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Kuesioner tersedia untuk digunakan dalam skrining pasien.
+                  </p>
+                  <div className="bg-gray-50 rounded-lg p-4 border-2 border-dashed border-gray-300">
+                    <p className="text-sm text-gray-500 italic">
+                      Detail kuesioner akan tersedia saat memulai skrining baru
+                    </p>
+                  </div>
                 </div>
+              ) : (
+                /* Tampilan untuk ADMIN - menampilkan daftar kuesioner lengkap */
+                questionnaires.length === 0 ? (
+                  <p className="text-black text-center py-6 sm:py-8 text-sm sm:text-base">Belum ada kuesioner dibuat</p>
+                ) : (
+                  <div className="space-y-3">
+                    {questionnaires.map((questionnaire) => (
+                      <div key={questionnaire.id} className="border rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
+                        <h3 className="font-semibold text-black text-sm sm:text-base">{questionnaire.title}</h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs sm:text-sm text-black">
+                            {questionnaire.questions.length} pertanyaan
+                          </span>
+                          <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                            {questionnaire.jenis_kuesioner || 'Pasien'}
+                          </span>
+                        </div>
+                        <div className="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-2 mt-2">
+                          {canEditQuestionnaires && (
+                            <button
+                              onClick={() => router.push(`/questionnaires/${questionnaire.id}/edit`)}
+                              className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                            >
+                              Edit Kuesioner
+                            </button>
+                          )}
+                          {canDeleteRecords && (
+                            <button
+                              onClick={() => handleDeleteQuestionnaire(questionnaire.id, questionnaire.title)}
+                              className="text-xs sm:text-sm text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                            >
+                              Hapus
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )
               )}
             </div>
           </div>
