@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden. Only admin can create questionnaires.' }, { status: 403 });
     }
 
-    const { title, description, jenis_kuesioner, questions, resultTiers, isPublic } = await request.json();
+    const { title, description, youtubeUrl, jenis_kuesioner, questions, resultTiers, isPublic } = await request.json();
 
     if (!title || !questions || !resultTiers || !jenis_kuesioner) {
       return NextResponse.json(
@@ -119,12 +119,13 @@ export async function POST(request: NextRequest) {
         data: {
           title,
           description,
+          youtubeUrl: youtubeUrl || null,
           jenis_kuesioner,
           questions,
           resultTiers,
           ...(typeof isPublic !== 'undefined' ? { isPublic: !!isPublic } : {}),
           doctorId: doctor.id
-        }
+        } as any
       });
     } catch (err) {
       console.error('Create questionnaire primary error:', err);
@@ -135,11 +136,12 @@ export async function POST(request: NextRequest) {
             data: {
               title,
               description,
+              youtubeUrl: youtubeUrl || null,
               jenis_kuesioner,
               questions,
               resultTiers,
               doctorId: doctor.id
-            }
+            } as any
           });
         } catch (err2) {
           console.error('Create questionnaire fallback error:', err2);

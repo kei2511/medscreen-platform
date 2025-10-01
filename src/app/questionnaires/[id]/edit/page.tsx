@@ -26,6 +26,7 @@ interface Questionnaire {
   id: string;
   title: string;
   description?: string;
+  youtubeUrl?: string;
   jenis_kuesioner?: 'Pasien' | 'Caregiver' | 'Keduanya';
   isPublic?: boolean;
   questions: Question[];
@@ -36,6 +37,7 @@ export default function EditQuestionnaire() {
   const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [youtubeUrl, setYoutubeUrl] = useState('');
   const [jenisKuesioner, setJenisKuesioner] = useState<'Pasien' | 'Caregiver' | 'Keduanya'>('Pasien');
   const [isPublic, setIsPublic] = useState(false);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -69,6 +71,7 @@ export default function EditQuestionnaire() {
         setQuestionnaire(data);
         setTitle(data.title);
         setDescription(data.description || '');
+        setYoutubeUrl(data.youtubeUrl || '');
         setJenisKuesioner(data.jenis_kuesioner || 'Pasien');
         setIsPublic(data.isPublic || false);
         
@@ -204,6 +207,7 @@ export default function EditQuestionnaire() {
         body: JSON.stringify({
           title,
           description,
+          youtubeUrl,
           jenis_kuesioner: jenisKuesioner,
           isPublic,
           questions: questions.map(q => ({
@@ -303,6 +307,23 @@ export default function EditQuestionnaire() {
                 rows={3}
                 placeholder="Jelaskan tujuan dan konteks penggunaan kuesioner ini"
               />
+            </div>
+
+            {/* YouTube URL */}
+            <div>
+              <label className="block text-sm font-medium text-black mb-2">
+                Link Video YouTube (Opsional)
+              </label>
+              <input
+                type="url"
+                value={youtubeUrl}
+                onChange={(e) => setYoutubeUrl(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="https://www.youtube.com/watch?v=... atau https://youtu.be/..."
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Video ini akan ditampilkan pada hasil skrining sebagai panduan untuk pasien/caregiver
+              </p>
             </div>
 
             {/* Jenis Kuesioner */}
