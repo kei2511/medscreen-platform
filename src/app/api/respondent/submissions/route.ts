@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     try { questions = Array.isArray(template?.questions) ? (template as any).questions : JSON.parse(String(template?.questions || '[]')); } catch {}
 
     // Validasi & Hitung skor total
-    let totalScore = 0;
+    let totalRawScore = 0;
     for (const ans of answers) {
       if (typeof ans.questionIndex !== 'number' || ans.questionIndex < 0 || ans.questionIndex >= questions.length) {
         return NextResponse.json({ error: 'Index pertanyaan tidak valid' }, { status: 400 });
@@ -75,13 +75,13 @@ export async function POST(req: NextRequest) {
           if (!ans.selected) continue;
           const found = opts.find(o => o.text === ans.selected.text);
             if (!found) return NextResponse.json({ error: 'Opsi tidak valid' }, { status: 400 });
-          totalScore += Number(found.score) || 0;
+          totalRawScore += Number(found.score) || 0;
         } else { // multiple_selection
           const selectedOpts = Array.isArray(ans.selectedOptions) ? ans.selectedOptions : [];
           for (const so of selectedOpts) {
             const found = opts.find(o => o.text === so.text);
             if (!found) return NextResponse.json({ error: 'Opsi tidak valid' }, { status: 400 });
-            totalScore += Number(found.score) || 0;
+            totalRawScore += Number(found.score) || 0;
           }
         }
       } else if (q.type === 'text_input') {
@@ -89,6 +89,10 @@ export async function POST(req: NextRequest) {
         continue;
       }
     }
+
+    // Hitung rata-rata skor per pertanyaan dan bulatkan untuk database
+    const averageScore = totalRawScore / questions.length;
+    const totalScore = Math.round(averageScore);
 
     // Determine resultLabel & recommendation from resultTiers JSON
     let resultLabel: string | undefined = undefined;

@@ -63,6 +63,7 @@ function NewScreeningContent() {
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasStarted, setHasStarted] = useState(false);
+  const [showDescription, setShowDescription] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -254,8 +255,12 @@ function NewScreeningContent() {
       return;
     }
 
-    const totalScore = answers.reduce((sum, answer) => sum + (answer.score || 0), 0);
-    console.log('Total score:', totalScore);
+    const totalRawScore = answers.reduce((sum, answer) => sum + (answer.score || 0), 0);
+    const averageScore = totalRawScore / selectedQuestionnaire.questions.length; // Rata-rata skor per pertanyaan
+    const totalScore = Math.round(averageScore); // Bulatkan untuk database (tetap Int)
+    console.log('Total raw score:', totalRawScore);
+    console.log('Average score per question:', averageScore);
+    console.log('Rounded total score for database:', totalScore);
     console.log('Result tiers:', selectedQuestionnaire.resultTiers);
     
     const resultTier = selectedQuestionnaire.resultTiers.find(
@@ -311,6 +316,113 @@ function NewScreeningContent() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-3 sm:mt-4 text-black text-sm sm:text-base">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Halaman Deskripsi Kuesioner
+  if (showDescription && selectedQuestionnaire && selectedQuestionnaire.description) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <header className="bg-white shadow-sm border-b">
+          <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-6">
+            <div className="flex justify-between items-center h-14 sm:h-16">
+              <div className="flex-1 min-w-0">
+                <h1 className="text-base sm:text-lg font-semibold text-black truncate">{selectedQuestionnaire.title}</h1>
+                <p className="text-xs sm:text-sm text-gray-600">
+                  {selectedPatient 
+                    ? `${selectedPatient.name} (${selectedPatient.age} tahun)`
+                    : selectedCaregiver 
+                      ? `${selectedCaregiver.nama_keluarga} - ${selectedCaregiver.hubungan_dengan_pasien} (${selectedCaregiver.umur_keluarga} tahun)`
+                      : ''
+                  }
+                </p>
+              </div>
+              <button
+                onClick={() => setShowDescription(false)}
+                className="text-black hover:text-black px-2 py-1 rounded hover:bg-gray-100 transition-colors"
+              >
+                Kembali
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <div className="max-w-3xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-8">
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+            {/* Header Deskripsi */}
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-8 text-white">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <h2 className="text-xl sm:text-2xl font-bold mb-2">Selamat Datang di Kuesioner</h2>
+                <p className="text-blue-100 text-sm sm:text-base">Silakan baca informasi berikut sebelum memulai</p>
+              </div>
+            </div>
+
+            {/* Konten Deskripsi */}
+            <div className="p-6 sm:p-8">
+              <div className="space-y-6">
+                {/* Info Kuesioner */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-800 mb-2 flex items-center">
+                    <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Informasi Kuesioner
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-600">
+                    <div><span className="font-medium">Jenis:</span> {selectedQuestionnaire.jenis_kuesioner || 'Pasien'}</div>
+                    <div><span className="font-medium">Jumlah Pertanyaan:</span> {selectedQuestionnaire.questions.length}</div>
+                    {selectedPatient && (
+                      <div className="sm:col-span-2"><span className="font-medium">Responden:</span> {selectedPatient.name} ({selectedPatient.age} tahun)</div>
+                    )}
+                    {selectedCaregiver && (
+                      <div className="sm:col-span-2"><span className="font-medium">Responden:</span> {selectedCaregiver.nama_keluarga} - {selectedCaregiver.hubungan_dengan_pasien}</div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Deskripsi */}
+                <div>
+                  <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
+                    <svg className="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Tentang Skrining Ini
+                  </h3>
+                  <div className="prose prose-sm max-w-none">
+                    <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                      {selectedQuestionnaire.description}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tombol Mulai */}
+              <div className="flex gap-3 mt-8">
+                <button
+                  onClick={() => setShowDescription(false)}
+                  className="flex-1 px-4 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
+                >
+                  Kembali
+                </button>
+                <button
+                  onClick={() => {
+                    setShowDescription(false);
+                    setHasStarted(true);
+                  }}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg font-medium transition-colors shadow-lg"
+                >
+                  Mulai Skrining
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -437,7 +549,11 @@ function NewScreeningContent() {
                 <button
                   onClick={() => {
                     if (selectedQuestionnaire && (selectedPatient || selectedCaregiver)) {
-                      setHasStarted(true);
+                      if (selectedQuestionnaire.description) {
+                        setShowDescription(true);
+                      } else {
+                        setHasStarted(true);
+                      }
                     }
                   }}
                   disabled={!selectedQuestionnaire || (!selectedPatient && !selectedCaregiver)}
@@ -468,8 +584,8 @@ function NewScreeningContent() {
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-6">
           <div className="flex justify-between items-center h-14 sm:h-16">
-            <div>
-              <h1 className="text-base sm:text-lg font-semibold text-black">{selectedQuestionnaire?.title}</h1>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-base sm:text-lg font-semibold text-black truncate">{selectedQuestionnaire?.title}</h1>
               <p className="text-xs sm:text-sm text-black">
                 {selectedPatient 
                   ? `${selectedPatient.name} (${selectedPatient.age} tahun)`
@@ -482,6 +598,7 @@ function NewScreeningContent() {
             <button
               onClick={() => {
                 setHasStarted(false);
+                setShowDescription(false);
                 setCurrentQuestionIndex(0);
                 setAnswers([]);
               }}

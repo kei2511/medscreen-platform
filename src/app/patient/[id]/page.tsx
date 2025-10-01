@@ -349,7 +349,7 @@ export default function PatientDetail() {
                       </p>
                     </div>
                     <div className="text-left sm:text-right flex-shrink-0">
-                      <div className="text-sm font-medium text-gray-900 mb-1">{result.totalScore} poin</div>
+                      <div className="text-sm font-medium text-gray-900 mb-1">{result.totalScore} poin (rata-rata)</div>
                       <span className={`inline-block px-2 py-1 text-xs rounded-full ${getRiskColor(result.resultLabel)}`}>
                         {result.resultLabel}
                       </span>
