@@ -209,6 +209,12 @@ export default function PatientDetail() {
                 Kembali
               </button>
               <button
+                onClick={() => router.push(`/patients/${patientId}/edit`)}
+                className="flex-1 sm:flex-none px-3 py-2 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+              >
+                Edit Data
+              </button>
+              <button
                 onClick={handleStartScreening}
                 className="flex-1 sm:flex-none px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >

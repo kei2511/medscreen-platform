@@ -18,11 +18,19 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
+    // Determine if caller is admin by fetching doctor record
+    let doctorRecord: any = null;
+    try {
+      doctorRecord = await prisma.doctor.findUnique({ where: { id: doctor.doctorId } });
+    } catch (e) {
+      console.error('Doctor lookup failed', e);
+    }
+    const isAdmin = doctorRecord && doctorRecord.role === 'ADMIN';
+
     const caregiver = await prisma.caregiver.findFirst({
-      where: {
-        id: params.id,
-        doctorId: doctor.doctorId
-      },
+      where: isAdmin
+        ? { id: params.id }
+        : { id: params.id, doctorId: doctor.doctorId },
       include: {
         patients: {
           select: {
@@ -91,12 +99,20 @@ export async function PUT(
       );
     }
 
-    // Check if caregiver exists and belongs to doctor
+    // Determine if caller is admin by fetching doctor record
+    let doctorRecord: any = null;
+    try {
+      doctorRecord = await prisma.doctor.findUnique({ where: { id: doctor.doctorId } });
+    } catch (e) {
+      console.error('Doctor lookup failed', e);
+    }
+    const isAdmin = doctorRecord && doctorRecord.role === 'ADMIN';
+
+    // Check if caregiver exists and belongs to doctor (or admin can edit any)
     const existingCaregiver = await prisma.caregiver.findFirst({
-      where: {
-        id: params.id,
-        doctorId: doctor.doctorId
-      }
+      where: isAdmin
+        ? { id: params.id }
+        : { id: params.id, doctorId: doctor.doctorId }
     });
 
     if (!existingCaregiver) {
@@ -150,12 +166,20 @@ export async function DELETE(
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    // Check if caregiver exists and belongs to doctor
+    // Determine if caller is admin by fetching doctor record
+    let doctorRecord: any = null;
+    try {
+      doctorRecord = await prisma.doctor.findUnique({ where: { id: doctor.doctorId } });
+    } catch (e) {
+      console.error('Doctor lookup failed', e);
+    }
+    const isAdmin = doctorRecord && doctorRecord.role === 'ADMIN';
+
+    // Check if caregiver exists and belongs to doctor (or admin can delete any)
     const existingCaregiver = await prisma.caregiver.findFirst({
-      where: {
-        id: params.id,
-        doctorId: doctor.doctorId
-      },
+      where: isAdmin
+        ? { id: params.id }
+        : { id: params.id, doctorId: doctor.doctorId },
       include: {
         patients: {
           select: {
