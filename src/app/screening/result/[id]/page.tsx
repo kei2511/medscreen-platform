@@ -165,8 +165,20 @@ export default function ScreeningResultPage() {
           {/* Score */}
           <div className="text-center mb-6 sm:mb-8">
             <div className="inline-block bg-green-100 rounded-full px-6 sm:px-8 py-3 sm:py-4">
-              <div className="text-2xl sm:text-3xl font-bold text-green-800">{result.totalScore}</div>
-              <div className="text-xs sm:text-sm text-green-600">Total Skor</div>
+              {(() => {
+                // Hitung rata-rata skor yang akurat dari jawaban
+                const totalRawScore = result.answers.reduce((sum, answer) => sum + (answer.score || 0), 0);
+                const averageScore = result.template.questions.length > 0 
+                  ? (totalRawScore / result.template.questions.length).toFixed(2)
+                  : '0';
+                return (
+                  <>
+                    <div className="text-2xl sm:text-3xl font-bold text-green-800">{averageScore}</div>
+                    <div className="text-xs sm:text-sm text-green-600">Rata-rata Skor per Pertanyaan</div>
+                    <div className="text-xs text-green-500 mt-1">({totalRawScore} dari {result.template.questions.length} pertanyaan)</div>
+                  </>
+                );
+              })()}
             </div>
           </div>
 

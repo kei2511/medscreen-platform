@@ -255,8 +255,12 @@ function NewScreeningContent() {
       return;
     }
 
-    const totalScore = answers.reduce((sum, answer) => sum + (answer.score || 0), 0);
-    console.log('Total score:', totalScore);
+    const totalRawScore = answers.reduce((sum, answer) => sum + (answer.score || 0), 0);
+    const averageScore = totalRawScore / selectedQuestionnaire.questions.length; // Rata-rata skor per pertanyaan
+    const totalScore = Math.round(averageScore); // Bulatkan untuk database (tetap Int)
+    console.log('Total raw score:', totalRawScore);
+    console.log('Average score per question:', averageScore);
+    console.log('Rounded total score for database:', totalScore);
     console.log('Result tiers:', selectedQuestionnaire.resultTiers);
     
     const resultTier = selectedQuestionnaire.resultTiers.find(
