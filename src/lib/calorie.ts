@@ -76,7 +76,8 @@ export function computeCalories(input: CalorieInput): CalorieResult {
 
   // Step 6: Total
   const total = kkb + factorAge + factorActivity + factorWeight;
-  const totalRounded = Math.round(total);
+  // Perubahan: bulatkan ke bawah sesuai permintaan (contoh: 2000.5 -> 2000)
+  const totalRounded = Math.floor(total);
 
   // Return values with reasonable precision for display
   return {
