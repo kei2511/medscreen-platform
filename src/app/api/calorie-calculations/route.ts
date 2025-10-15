@@ -16,21 +16,26 @@ export async function GET(request: NextRequest) {
   try {
     const doctor = await getDoctorFromRequest(request);
     if (!doctor) {
+      console.error('Unauthorized request to get calorie calculations');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    console.log('Get calorie calculations for doctor:', doctor); // Debug log
 
     const { searchParams } = new URL(request.url);
     const targetId = searchParams.get('targetId');
     const targetType = searchParams.get('targetType');
 
-    // Build query conditions
+    // Build query conditions - using the correct doctorId from token
     const whereClause: any = {
-      doctorId: doctor.doctorId
+      doctorId: doctor.doctorId || doctor.id
     };
 
     if (targetId && targetType) {
       whereClause[`${targetType}Id`] = targetId;
     }
+
+    console.log('Querying calorie calculations with where clause:', whereClause); // Debug log
 
     const calorieCalculations = await prisma.calorieCalculation.findMany({
       where: whereClause,
@@ -59,6 +64,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    console.log('Saving calorie calculation for doctor:', doctor); // Debug log
+    
     const body = await request.json();
     
     console.log('Received body for calorie calculation:', body); // Debug log
@@ -82,14 +89,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if the doctor exists to get the correct doctor ID format
+    const doctorRecord = await prisma.doctor.findUnique({
+      where: { id: doctor.doctorId || doctor.id }
+    });
+    
+    if (!doctorRecord) {
+      console.error('Doctor not found in database');
+      return NextResponse.json(
+        { error: 'Dokter tidak ditemukan' }, 
+        { status: 403 }
+      );
+    }
+
     // Verify that the user has access to this patient or caregiver
     let exists = false;
     let targetName = '';
+    const doctorId = doctorRecord.id; // Use the actual doctor ID from the database
+    
     if (targetType === 'patient') {
       const patient = await prisma.patient.findFirst({
         where: {
           id: targetId,
-          doctorId: doctor.doctorId
+          doctorId: doctorId
         }
       });
       exists = !!patient;
@@ -98,7 +120,7 @@ export async function POST(request: NextRequest) {
       const caregiver = await prisma.caregiver.findFirst({
         where: {
           id: targetId,
-          doctorId: doctor.doctorId
+          doctorId: doctorId
         }
       });
       exists = !!caregiver;
@@ -106,20 +128,20 @@ export async function POST(request: NextRequest) {
     }
 
     if (!exists) {
-      console.error('User does not have access to this target', { targetId, targetType, doctorId: doctor.doctorId });
+      console.error('User does not have access to this target', { targetId, targetType, doctorId });
       return NextResponse.json(
         { error: 'Akses ke target tidak ditemukan atau tidak diizinkan' }, 
         { status: 403 }
       );
     }
 
-    console.log('Creating calorie calculation for:', targetName, 'Type:', targetType); // Debug log
+    console.log('Creating calorie calculation for:', targetName, 'Type:', targetType, 'Doctor ID:', doctorId); // Debug log
 
     // Create the calorie calculation record
     const calorieCalculation = await prisma.calorieCalculation.create({
       data: {
         [`${targetType}Id`]: targetId,  // Dynamically set either patientId or caregiverId
-        doctorId: doctor.doctorId as string,
+        doctorId: doctorId,
         gender,
         heightCm: parseFloat(heightCm),
         weightKg: parseFloat(weightKg),
