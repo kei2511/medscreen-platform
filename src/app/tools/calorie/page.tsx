@@ -34,45 +34,45 @@ export default function CaloriePage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow">
-        <h1 className="text-xl font-bold mb-4">Kalkulator Kebutuhan Kalori</h1>
+        <h1 className="text-xl font-bold mb-4 text-black">Kalkulator Kebutuhan Kalori</h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-sm font-medium">Jenis Kelamin</label>
+            <label className="text-sm font-medium text-black">Jenis Kelamin</label>
             <div className="flex gap-4 mt-2">
               <label className="inline-flex items-center">
                 <input type="radio" name="gender" checked={gender === 'Laki-laki'} onChange={() => setGender('Laki-laki')} />
-                <span className="ml-2">Laki-laki</span>
+                <span className="ml-2 text-black">Laki-laki</span>
               </label>
               <label className="inline-flex items-center">
                 <input type="radio" name="gender" checked={gender === 'Perempuan'} onChange={() => setGender('Perempuan')} />
-                <span className="ml-2">Perempuan</span>
+                <span className="ml-2 text-black">Perempuan</span>
               </label>
             </div>
           </div>
 
           <div>
-            <label className="text-sm font-medium">Tinggi Badan (cm)</label>
+            <label className="text-sm font-medium text-black">Tinggi Badan (cm)</label>
             <input type="number" value={height} onChange={(e) => setHeight(e.target.value)} className="w-full mt-2 p-2 border rounded" />
           </div>
 
           <div>
-            <label className="text-sm font-medium">Berat Badan (kg)</label>
+            <label className="text-sm font-medium text-black">Berat Badan (kg)</label>
             <input type="number" value={weight} onChange={(e) => setWeight(e.target.value)} className="w-full mt-2 p-2 border rounded" />
           </div>
 
           <div>
-            <label className="text-sm font-medium">Usia (tahun)</label>
+            <label className="text-sm font-medium text-black">Usia (tahun)</label>
             <input type="number" value={age} onChange={(e) => setAge(e.target.value)} className="w-full mt-2 p-2 border rounded" />
           </div>
 
           <div>
-            <label className="text-sm font-medium">Tingkat Aktivitas</label>
+            <label className="text-sm font-medium text-black">Tingkat Aktivitas</label>
             <select value={activity} onChange={(e) => setActivity(e.target.value as any)} className="w-full mt-2 p-2 border rounded">
-              <option value="Istirahat">Istirahat (Sangat jarang atau tidak pernah olahraga)</option>
-              <option value="Ringan">Ringan (Olahraga 1-3 kali/minggu)</option>
-              <option value="Sedang">Sedang (Olahraga 3-5 kali/minggu)</option>
-              <option value="Berat">Berat (Olahraga 6-7 kali/minggu)</option>
+              <option value="Istirahat">Istirahat</option>
+              <option value="Ringan">Ringan</option>
+              <option value="Sedang">Sedang</option>
+              <option value="Berat">Berat</option>
             </select>
           </div>
 
@@ -93,24 +93,24 @@ export default function CaloriePage() {
 
             <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
               <div className="p-3 bg-white border rounded">
-                <div className="font-medium">BBI</div>
-                <div>{result.bbi} kg</div>
+                <div className="font-medium text-black">BBI</div>
+                <div className="text-black">{result.bbi} kg</div>
               </div>
               <div className="p-3 bg-white border rounded">
-                <div className="font-medium">Kalori Basal (KKB)</div>
-                <div>{result.kkb} kkal</div>
+                <div className="font-medium text-black">Kalori Basal (KKB)</div>
+                <div className="text-black">{result.kkb} kkal</div>
               </div>
               <div className="p-3 bg-white border rounded">
-                <div className="font-medium">Faktor Usia</div>
-                <div>{result.factorAge} kkal</div>
+                <div className="font-medium text-black">Faktor Usia</div>
+                <div className="text-black">{result.factorAge} kkal</div>
               </div>
               <div className="p-3 bg-white border rounded">
-                <div className="font-medium">Faktor Aktivitas</div>
-                <div>{result.factorActivity} kkal</div>
+                <div className="font-medium text-black">Faktor Aktivitas</div>
+                <div className="text-black">{result.factorActivity} kkal</div>
               </div>
               <div className="p-3 bg-white border rounded sm:col-span-2">
-                <div className="font-medium">Faktor Berat</div>
-                <div>{result.factorWeight} kkal (IMT: {result.bmi})</div>
+                <div className="font-medium text-black">Faktor Berat</div>
+                <div className="text-black">{result.factorWeight} kkal (IMT: {result.bmi})</div>
               </div>
             </div>
           </div>
