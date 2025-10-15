@@ -54,7 +54,7 @@ export default function CaloriePage() {
           return;
         }
         
-        const response = await fetch('/api/tools/calorie/patients-caregivers', {
+        const response = await fetch('/api/patients-caregivers', {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -96,7 +96,7 @@ export default function CaloriePage() {
         const person = people.find(p => p.id === selectedPerson);
         if (!person) return;
         
-        const response = await fetch(`/api/tools/calorie/calculations?targetId=${selectedPerson}&targetType=${person.type}`, {
+        const response = await fetch(`/api/calorie-calculations?targetId=${selectedPerson}&targetType=${person.type}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -175,7 +175,7 @@ export default function CaloriePage() {
         return;
       }
       
-      const response = await fetch('/api/tools/calorie/calculations', {
+      const response = await fetch('/api/calorie-calculations', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
