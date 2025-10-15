@@ -89,13 +89,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // The doctorId from token should be the actual doctor ID
+    const tokenDoctorId = doctor.doctorId;
+    console.log('Token doctor ID:', tokenDoctorId); // Debug log
+    
     // Check if the doctor exists to get the correct doctor ID format
     const doctorRecord = await prisma.doctor.findUnique({
-      where: { id: doctor.doctorId || doctor.id }
+      where: { id: tokenDoctorId }
     });
     
     if (!doctorRecord) {
-      console.error('Doctor not found in database');
+      console.error('Doctor not found in database with ID:', tokenDoctorId);
       return NextResponse.json(
         { error: 'Dokter tidak ditemukan' }, 
         { status: 403 }
@@ -107,6 +111,8 @@ export async function POST(request: NextRequest) {
     let targetName = '';
     const doctorId = doctorRecord.id; // Use the actual doctor ID from the database
     
+    console.log('Checking access for doctorId:', doctorId, 'targetType:', targetType, 'targetId:', targetId); // Debug log
+
     if (targetType === 'patient') {
       const patient = await prisma.patient.findFirst({
         where: {
@@ -114,6 +120,7 @@ export async function POST(request: NextRequest) {
           doctorId: doctorId
         }
       });
+      console.log('Patient lookup result:', patient ? 'Found' : 'Not found'); // Debug log
       exists = !!patient;
       targetName = patient?.name || 'Unknown Patient';
     } else if (targetType === 'caregiver') {
@@ -123,6 +130,7 @@ export async function POST(request: NextRequest) {
           doctorId: doctorId
         }
       });
+      console.log('Caregiver lookup result:', caregiver ? 'Found' : 'Not found'); // Debug log
       exists = !!caregiver;
       targetName = caregiver?.nama_keluarga || 'Unknown Caregiver';
     }
