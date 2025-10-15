@@ -78,7 +78,7 @@ export default function CaloriePage() {
 
           <div className="flex gap-3">
             <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded">Hitung Kalori</button>
-            <button type="button" onClick={() => { setResult(null); setError(null); }} className="px-4 py-2 bg-gray-200 rounded">Reset</button>
+            <button type="button" onClick={() => { setResult(null); setError(null); }} className="px-4 py-2 bg-gray-200 rounded text-black">Reset</button>
           </div>
         </form>
 
