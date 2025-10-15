@@ -26,10 +26,18 @@ export async function GET(request: NextRequest) {
     const targetId = searchParams.get('targetId');
     const targetType = searchParams.get('targetType');
 
-    // Build query conditions - using the correct doctorId from token
-    const whereClause: any = {
-      doctorId: doctor.doctorId || doctor.id
-    };
+    // Determine if caller is admin doctor by fetching doctor record
+    let doctorRecord: any = null;
+    try {
+      doctorRecord = await prisma.doctor.findUnique({ where: { id: doctor.doctorId } });
+    } catch (e) {
+      console.error('Doctor lookup failed', e);
+    }
+
+    const isAdmin = doctorRecord && doctorRecord.role === 'ADMIN';
+
+    // Build query conditions
+    const whereClause: any = isAdmin ? {} : { doctorId: doctor.doctorId };
 
     if (targetId && targetType) {
       whereClause[`${targetType}Id`] = targetId;
@@ -89,46 +97,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // The doctorId from token should be the actual doctor ID
-    const tokenDoctorId = doctor.doctorId;
-    console.log('Token doctor ID:', tokenDoctorId); // Debug log
-    
-    // Check if the doctor exists to get the correct doctor ID format
-    const doctorRecord = await prisma.doctor.findUnique({
-      where: { id: tokenDoctorId }
-    });
-    
-    if (!doctorRecord) {
-      console.error('Doctor not found in database with ID:', tokenDoctorId);
-      return NextResponse.json(
-        { error: 'Dokter tidak ditemukan' }, 
-        { status: 403 }
-      );
+    // Determine if caller is admin doctor by fetching doctor record
+    let doctorRecord: any = null;
+    try {
+      doctorRecord = await prisma.doctor.findUnique({ where: { id: doctor.doctorId } });
+    } catch (e) {
+      console.error('Doctor lookup failed', e);
     }
+
+    const isAdmin = doctorRecord && doctorRecord.role === 'ADMIN';
 
     // Verify that the user has access to this patient or caregiver
     let exists = false;
     let targetName = '';
-    const doctorId = doctorRecord.id; // Use the actual doctor ID from the database
-    
-    console.log('Checking access for doctorId:', doctorId, 'targetType:', targetType, 'targetId:', targetId); // Debug log
+    const doctorId = isAdmin ? targetId  // For admin, they can access any target
+      : doctor.doctorId;                // For non-admin, use their own doctorId
+
+    console.log('Checking access - isAdmin:', isAdmin, 'doctorId:', doctorId, 'targetType:', targetType, 'targetId:', targetId); // Debug log
 
     if (targetType === 'patient') {
       const patient = await prisma.patient.findFirst({
-        where: {
-          id: targetId,
-          doctorId: doctorId
-        }
+        where: isAdmin ? { id: targetId } : { id: targetId, doctorId }
       });
       console.log('Patient lookup result:', patient ? 'Found' : 'Not found'); // Debug log
       exists = !!patient;
       targetName = patient?.name || 'Unknown Patient';
     } else if (targetType === 'caregiver') {
       const caregiver = await prisma.caregiver.findFirst({
-        where: {
-          id: targetId,
-          doctorId: doctorId
-        }
+        where: isAdmin ? { id: targetId } : { id: targetId, doctorId }
       });
       console.log('Caregiver lookup result:', caregiver ? 'Found' : 'Not found'); // Debug log
       exists = !!caregiver;
@@ -136,7 +132,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!exists) {
-      console.error('User does not have access to this target', { targetId, targetType, doctorId });
+      console.error('User does not have access to this target', { targetId, targetType, doctorId, isAdmin });
       return NextResponse.json(
         { error: 'Akses ke target tidak ditemukan atau tidak diizinkan' }, 
         { status: 403 }
@@ -149,7 +145,7 @@ export async function POST(request: NextRequest) {
     const calorieCalculation = await prisma.calorieCalculation.create({
       data: {
         [`${targetType}Id`]: targetId,  // Dynamically set either patientId or caregiverId
-        doctorId: doctorId,
+        doctorId: doctor.doctorId,  // Use the authenticated doctor's ID
         gender,
         heightCm: parseFloat(heightCm),
         weightKg: parseFloat(weightKg),
