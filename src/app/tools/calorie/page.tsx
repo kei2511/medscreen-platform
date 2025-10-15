@@ -175,6 +175,13 @@ export default function CaloriePage() {
         return;
       }
       
+      console.log('Attempting to save calorie calculation:', {
+        targetId: selectedPerson,
+        targetType: person.type,
+        input,
+        result
+      }); // Debug log
+      
       const response = await fetch('/api/calorie-calculations', {
         method: 'POST',
         headers: {
@@ -199,11 +206,15 @@ export default function CaloriePage() {
         }),
       });
       
+      console.log('Save response status:', response.status); // Debug log
+      
       if (!response.ok) {
-        console.error('Gagal menyimpan ke riwayat');
+        const errorText = await response.text();
+        console.error('Gagal menyimpan ke riwayat:', errorText);
       } else {
         // Refresh history after saving
         const newCalculation = await response.json();
+        console.log('Successfully saved calculation:', newCalculation); // Debug log
         setHistory(prev => [newCalculation, ...prev]);
       }
     } catch (error) {

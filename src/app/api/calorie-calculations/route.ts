@@ -55,15 +55,19 @@ export async function POST(request: NextRequest) {
   try {
     const doctor = await getDoctorFromRequest(request);
     if (!doctor) {
+      console.error('Unauthorized request to save calorie calculation');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
     
+    console.log('Received body for calorie calculation:', body); // Debug log
+    
     // Validate required fields
     const { targetId, targetType, gender, heightCm, weightKg, age, activity, result } = body;
     
     if (!targetId || !targetType || !gender || !heightCm || !weightKg || !age || !activity || !result) {
+      console.error('Missing required fields for calorie calculation', { targetId, targetType, gender, heightCm, weightKg, age, activity, result });
       return NextResponse.json(
         { error: 'Semua field wajib diisi' }, 
         { status: 400 }
@@ -71,6 +75,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (targetType !== 'patient' && targetType !== 'caregiver') {
+      console.error('Invalid target type', targetType);
       return NextResponse.json(
         { error: 'Target type harus patient atau caregiver' }, 
         { status: 400 }
@@ -79,6 +84,7 @@ export async function POST(request: NextRequest) {
 
     // Verify that the user has access to this patient or caregiver
     let exists = false;
+    let targetName = '';
     if (targetType === 'patient') {
       const patient = await prisma.patient.findFirst({
         where: {
@@ -87,6 +93,7 @@ export async function POST(request: NextRequest) {
         }
       });
       exists = !!patient;
+      targetName = patient?.name || 'Unknown Patient';
     } else if (targetType === 'caregiver') {
       const caregiver = await prisma.caregiver.findFirst({
         where: {
@@ -95,14 +102,18 @@ export async function POST(request: NextRequest) {
         }
       });
       exists = !!caregiver;
+      targetName = caregiver?.nama_keluarga || 'Unknown Caregiver';
     }
 
     if (!exists) {
+      console.error('User does not have access to this target', { targetId, targetType, doctorId: doctor.doctorId });
       return NextResponse.json(
         { error: 'Akses ke target tidak ditemukan atau tidak diizinkan' }, 
         { status: 403 }
       );
     }
+
+    console.log('Creating calorie calculation for:', targetName, 'Type:', targetType); // Debug log
 
     // Create the calorie calculation record
     const calorieCalculation = await prisma.calorieCalculation.create({
@@ -121,6 +132,8 @@ export async function POST(request: NextRequest) {
         caregiver: true,
       }
     });
+
+    console.log('Successfully saved calorie calculation with ID:', calorieCalculation.id); // Debug log
 
     return NextResponse.json(calorieCalculation, { status: 201 });
   } catch (error) {
