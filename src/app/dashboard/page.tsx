@@ -219,6 +219,12 @@ export default function Dashboard() {
             <div className="flex items-center space-x-2 sm:space-x-4">
               <span className="text-xs sm:text-sm text-black hidden sm:block">Halo, {doctorName || 'Dokter'}</span>
               <button
+                onClick={() => router.push('/tools/calorie')}
+                className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+              >
+                Kalkulator Kalori
+              </button>
+              <button
                 onClick={handleLogout}
                 className="text-xs sm:text-sm text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors"
               >
