@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { computeCalories, CalorieInput } from '@/lib/calorie';
 import { getAuthToken } from '@/lib/auth';
 
@@ -30,6 +31,7 @@ interface CalorieCalculation {
 }
 
 export default function CaloriePage() {
+  const router = useRouter();
   const [gender, setGender] = useState<'Laki-laki' | 'Perempuan'>('Laki-laki');
   const [height, setHeight] = useState<string>('170');
   const [weight, setWeight] = useState<string>('70');
@@ -236,7 +238,15 @@ export default function CaloriePage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow">
-        <h1 className="text-xl font-bold mb-4 text-black">Kalkulator Kebutuhan Kalori</h1>
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-xl font-bold text-black">Kalkulator Kebutuhan Kalori</h1>
+          <button 
+            onClick={() => router.push('/dashboard')}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+          >
+            Kembali
+          </button>
+        </div>
 
         {/* Person Selection */}
         <div className="mb-6">
