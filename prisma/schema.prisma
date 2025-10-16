@@ -19,6 +19,7 @@ model Doctor {
   patients   Patient[]
   templates  QuestionnaireTemplate[]
   results    ScreeningResult[]
+  calorieCalculations CalorieCalculation[]
 }
 
 model Caregiver {
@@ -33,6 +34,7 @@ model Caregiver {
   doctor                 Doctor               @relation(fields: [doctorId], references: [id])
   patients               Patient[]
   results                ScreeningResult[]
+  calorieCalculations    CalorieCalculation[]
 }
 
 model Patient {
@@ -50,6 +52,7 @@ model Patient {
   caregiver         Caregiver?        @relation(fields: [caregiverId], references: [id])
   doctor            Doctor            @relation(fields: [doctorId], references: [id])
   results           ScreeningResult[]
+  calorieCalculations CalorieCalculation[]
 }
 
 model QuestionnaireTemplate {
@@ -101,6 +104,24 @@ model Respondent {
   createdAt         DateTime               @default(now())
   updatedAt         DateTime               @updatedAt
   submissions       RespondentSubmission[]
+}
+
+model CalorieCalculation {
+  id              String   @id @default(cuid())
+  patientId       String?
+  caregiverId     String?
+  doctorId        String
+  gender          String
+  heightCm        Float
+  weightKg        Float
+  age             Int
+  activity        String
+  result          Json
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  patient         Patient? @relation(fields: [patientId], references: [id])
+  caregiver       Caregiver? @relation(fields: [caregiverId], references: [id])
+  doctor          Doctor   @relation(fields: [doctorId], references: [id])
 }
 
 model RespondentSubmission {
