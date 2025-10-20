@@ -48,22 +48,18 @@ export default function CaloriePage() {
 
   // Function to determine which menu image to show based on calorie result
   const getMenuImageForCalories = (calories: number): string => {
-    // Range mapping - for example: 1851-1950 uses 1900.jpg
-    // We'll create ranges that are centered on each 100 calorie increment
-    const range = Math.round(calories / 100) * 100;
-    
-    // Only return an image if we have it in the pictures folder
-    // For now, we only have 1900.jpg so we'll return it for values in the 1851-1950 range
-    if (calories >= 1851 && calories <= 1950) {
-      return '/pictures/1900.jpg'; // Image is served from the public folder
+    // Range mapping for different menu images
+    // For example: 1051-1150 uses 1100.jpg, 1251-1350 uses 1300.jpg, 1851-1950 uses 1900.jpg
+    if (calories >= 1051 && calories <= 1150) {
+      return '/pictures/1100.jpg'; // Image for 1100 calories range
+    } else if (calories >= 1251 && calories <= 1350) {
+      return '/pictures/1300.jpg'; // Image for 1300 calories range
+    } else if (calories >= 1851 && calories <= 1950) {
+      return '/pictures/1900.jpg'; // Image for 1900 calories range
     }
     
-    // If you have more images, you can add more ranges like:
-    // if (calories >= 1251 && calories <= 1350) return '/pictures/1300.jpg';
-    // if (calories >= 1351 && calories <= 1450) return '/pictures/1400.jpg';
-    // etc.
-    
-    return '/pictures/1900.jpg'; // Default fallback if no specific range matches
+    // Default fallback if no specific range matches
+    return '/pictures/1900.jpg';
   };
 
   // Effect to update menu image when result changes
