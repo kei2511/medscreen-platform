@@ -48,17 +48,25 @@ export default function CaloriePage() {
 
   // Function to determine which menu image to show based on calorie result
   const getMenuImageForCalories = (calories: number): string => {
-    // Range mapping for different menu images
-    // For example: 1051-1150 uses 1100.jpg, 1251-1350 uses 1300.jpg, 1851-1950 uses 1900.jpg
-    if (calories >= 1001 && calories <= 1100) {
+    // Range mapping for different menu images based on calorie requirements
+    if (calories <= 1299) {
       return '/pictures/1100.jpg'; // Image for 1100 calories range
-    } else if (calories >= 1201 && calories <= 1300) {
+    } else if (calories >= 1300 && calories <= 1499) {
       return '/pictures/1300.jpg'; // Image for 1300 calories range
-    } else if (calories >= 1801 && calories <= 1900) {
+    } else if (calories >= 1500 && calories <= 1699) {
+      return '/pictures/1500.jpg'; // Image for 1500 calories range
+    } else if (calories >= 1700 && calories <= 1899) {
+      return '/pictures/1700.jpg'; // Image for 1700 calories range
+    } else if (calories >= 1900 && calories <= 2099) {
       return '/pictures/1900.jpg'; // Image for 1900 calories range
+    } else if (calories >= 2100 && calories <= 2299) {
+      return '/pictures/2100.jpg'; // Image for 1900 calories range
+    } else if (calories >= 2300) {
+      return '/pictures/2300.jpg'; // Image for 2300 calories range
     }
     
     // Default fallback if no specific range matches
+    // You can modify this to map to the closest available image
     return '/pictures/1900.jpg';
   };
 
