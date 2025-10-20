@@ -44,6 +44,41 @@ export default function CaloriePage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [history, setHistory] = useState<CalorieCalculation[]>([]);
   const [historyLoading, setHistoryLoading] = useState<boolean>(false);
+  const [menuImage, setMenuImage] = useState<string | null>(null);
+
+  // Function to determine which menu image to show based on calorie result
+  const getMenuImageForCalories = (calories: number): string => {
+    // Range mapping for different menu images based on calorie requirements
+    if (calories <= 1299) {
+      return '/pictures/1100.jpg'; // Image for 1100 calories range
+    } else if (calories >= 1300 && calories <= 1499) {
+      return '/pictures/1300.jpg'; // Image for 1300 calories range
+    } else if (calories >= 1500 && calories <= 1699) {
+      return '/pictures/1500.jpg'; // Image for 1500 calories range
+    } else if (calories >= 1700 && calories <= 1899) {
+      return '/pictures/1700.jpg'; // Image for 1700 calories range
+    } else if (calories >= 1900 && calories <= 2099) {
+      return '/pictures/1900.jpg'; // Image for 1900 calories range
+    } else if (calories >= 2100 && calories <= 2299) {
+      return '/pictures/2100.jpg'; // Image for 1900 calories range
+    } else if (calories >= 2300) {
+      return '/pictures/2300.jpg'; // Image for 2300 calories range
+    }
+    
+    // Default fallback if no specific range matches
+    // You can modify this to map to the closest available image
+    return '/pictures/1900.jpg';
+  };
+
+  // Effect to update menu image when result changes
+  useEffect(() => {
+    if (result && result.totalRounded) {
+      const image = getMenuImageForCalories(result.totalRounded);
+      setMenuImage(image);
+    } else {
+      setMenuImage(null);
+    }
+  }, [result]);
 
   // Fetch patients and caregivers
   useEffect(() => {
@@ -385,6 +420,24 @@ export default function CaloriePage() {
                 <div className="text-black">{result.factorWeight} kkal (IMT: {result.bmi})</div>
               </div>
             </div>
+
+            {/* Menu Image Display */}
+            {menuImage && (
+              <div className="mt-6">
+                <h3 className="text-center text-lg font-semibold text-black mb-3">Menu Makanan Disarankan</h3>
+                <div className="flex justify-center">
+                  <img 
+                    src={menuImage} 
+                    alt={`Menu untuk kebutuhan kalori ${result.totalRounded}`} 
+                    className="max-w-full h-auto rounded-lg border"
+                    onError={(e) => {
+                      console.error(`Error loading image: ${menuImage}`);
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         )}
 
