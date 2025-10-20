@@ -50,7 +50,7 @@ export default function CaloriePage() {
   const getMenuImageForCalories = (calories: number): string => {
     // Range mapping for different menu images
     // For example: 1051-1150 uses 1100.jpg, 1251-1350 uses 1300.jpg, 1851-1950 uses 1900.jpg
-    if (calories >= 1051 && calories <= 1150) {
+    if (calories >= 1051 && calories <= 1851) {
       return '/pictures/1100.jpg'; // Image for 1100 calories range
     } else if (calories >= 1251 && calories <= 1350) {
       return '/pictures/1300.jpg'; // Image for 1300 calories range
