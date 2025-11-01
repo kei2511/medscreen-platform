@@ -232,16 +232,12 @@ export default function ScreeningResultPage() {
                     );
                   })()}
                 </div>
-                <p className="text-sm text-black mt-2">
-                  Video utama dari template kuesioner
-                </p>
               </div>
             )}
 
             {/* Additional multiple videos from template - same size as main video with vertical layout */}
             {result.template.youtubeUrls && result.template.youtubeUrls.length > 0 && (
               <div className="space-y-4">
-                <h4 className="text-sm font-semibold text-black">Video Tambahan</h4>
                 <div className="space-y-4">
                   {result.template.youtubeUrls.map((url, index) => {
                     if (!url.trim()) return null;
