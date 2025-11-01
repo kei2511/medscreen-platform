@@ -27,6 +27,7 @@ interface ScreeningResult {
   template: {
     title: string;
     youtubeUrl?: string;
+    youtubeUrls?: string[]; // Array of YouTube URLs for multiple videos
     questions: {
       text: string;
       type: 'multiple_choice' | 'multiple_selection' | 'text_input';
@@ -58,6 +59,8 @@ const getYouTubeVideoId = (url: string): string | null => {
 export default function ScreeningResultPage() {
   const [result, setResult] = useState<ScreeningResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [newVideoUrl, setNewVideoUrl] = useState('');
+  const [isAddingVideo, setIsAddingVideo] = useState(false);
   const router = useRouter();
   const params = useParams();
   const resultId = params.id as string;
@@ -96,6 +99,125 @@ export default function ScreeningResultPage() {
 
   const handleBackToDashboard = () => {
     router.push('/dashboard');
+  };
+
+  const addVideoUrl = async () => {
+    if (!newVideoUrl.trim() || !result) return;
+    
+    // Validate YouTube URL
+    const videoId = getYouTubeVideoId(newVideoUrl);
+    if (!videoId) {
+      alert('URL YouTube tidak valid');
+      return;
+    }
+
+    setIsAddingVideo(true);
+    try {
+      const token = getAuthToken();
+      
+      // First, get the complete template data to preserve all fields
+      const templateResponse = await fetch(`/api/questionnaires/${result.template.id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!templateResponse.ok) {
+        alert('Gagal mengambil data kuesioner');
+        return;
+      }
+
+      const templateData = await templateResponse.json();
+      
+      // Add the new video URL to the template's youtubeUrls array
+      const updatedUrls = [...(templateData.youtubeUrls || []), newVideoUrl.trim()];
+      
+      // Update the questionnaire template
+      const response = await fetch(`/api/questionnaires/${templateData.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: templateData.title,
+          description: templateData.description,
+          youtubeUrl: templateData.youtubeUrl, // Preserve the original youtubeUrl
+          youtubeUrls: updatedUrls, // Updated array with the new URL
+          jenis_kuesioner: templateData.jenis_kuesioner,
+          isPublic: templateData.isPublic,
+          questions: templateData.questions,
+          resultTiers: templateData.resultTiers,
+        }),
+      });
+
+      if (response.ok) {
+        setNewVideoUrl('');
+        // Refresh the result data
+        fetchResult();
+      } else {
+        alert('Gagal menambahkan video');
+      }
+    } catch (error) {
+      console.error('Error adding video:', error);
+      alert('Terjadi kesalahan saat menambahkan video');
+    } finally {
+      setIsAddingVideo(false);
+    }
+  };
+
+  const removeVideoUrl = async (index: number) => {
+    if (!result) return;
+
+    try {
+      const token = getAuthToken();
+      
+      // First, get the complete template data to preserve all fields
+      const templateResponse = await fetch(`/api/questionnaires/${result.template.id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!templateResponse.ok) {
+        alert('Gagal mengambil data kuesioner');
+        return;
+      }
+
+      const templateData = await templateResponse.json();
+      
+      // Remove the video URL at the specified index from the template's youtubeUrls array
+      const updatedUrls = (templateData.youtubeUrls || []).filter((_: string, i: number) => i !== index);
+      
+      // Update the questionnaire template
+      const response = await fetch(`/api/questionnaires/${templateData.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: templateData.title,
+          description: templateData.description,
+          youtubeUrl: templateData.youtubeUrl, // Preserve the original youtubeUrl
+          youtubeUrls: updatedUrls, // Updated array without the removed URL
+          jenis_kuesioner: templateData.jenis_kuesioner,
+          isPublic: templateData.isPublic,
+          questions: templateData.questions,
+          resultTiers: templateData.resultTiers,
+        }),
+      });
+
+      if (response.ok) {
+        // Refresh the result data
+        fetchResult();
+      } else {
+        alert('Gagal menghapus video');
+      }
+    } catch (error) {
+      console.error('Error removing video:', error);
+      alert('Terjadi kesalahan saat menghapus video');
+    }
   };
 
   if (isLoading) {
@@ -206,47 +328,126 @@ export default function ScreeningResultPage() {
           {/* Video Anjuran Penanganan */}
           <div className="mb-6 sm:mb-8">
             <h3 className="text-base sm:text-lg font-semibold text-black mb-3 sm:mb-4">Anjuran Penanganan</h3>
-            <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden shadow-lg">
-              {result.template.youtubeUrl ? (
-                // YouTube Video
-                (() => {
-                  const videoId = getYouTubeVideoId(result.template.youtubeUrl);
-                  return videoId ? (
-                    <iframe
-                      src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`}
-                      title="Video Anjuran Penanganan"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      allowFullScreen
-                      className="w-full h-full"
-                    ></iframe>
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <p className="text-gray-500 text-sm text-center px-4">
-                        URL YouTube tidak valid: {result.template.youtubeUrl}
-                      </p>
-                    </div>
-                  );
-                })()
-              ) : (
-                // Fallback ke video lokal
-                <video
-                  controls
-                  className="w-full h-full"
-                  poster="/images/video-poster.jpg"
-                  preload="metadata"
+            
+            {/* Existing single video or default video */}
+            {result.template.youtubeUrl && (
+              <div className="mb-4">
+                <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden shadow-lg">
+                  {(() => {
+                    const videoId = getYouTubeVideoId(result.template.youtubeUrl);
+                    return videoId ? (
+                      <iframe
+                        src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`}
+                        title="Video Anjuran Penanganan"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                        className="w-full h-full"
+                      ></iframe>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <p className="text-gray-500 text-sm text-center px-4">
+                          URL YouTube tidak valid: {result.template.youtubeUrl}
+                        </p>
+                      </div>
+                    );
+                  })()}
+                </div>
+                <p className="text-sm text-black mt-2">
+                  Video utama dari template kuesioner
+                </p>
+              </div>
+            )}
+
+            {/* Additional multiple videos from template */}
+            {result.template.youtubeUrls && result.template.youtubeUrls.length > 0 && (
+              <div className="space-y-4">
+                <h4 className="text-sm font-semibold text-black">Video Tambahan</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {result.template.youtubeUrls.map((url, index) => {
+                    if (!url.trim()) return null;
+                    const videoId = getYouTubeVideoId(url);
+                    return (
+                      <div key={index} className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden shadow">
+                        <div className="absolute top-2 right-2 z-10">
+                          <button
+                            onClick={() => removeVideoUrl(index)}
+                            className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                            title="Hapus video"
+                          >
+                            ×
+                          </button>
+                        </div>
+                        {videoId ? (
+                          <iframe
+                            src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`}
+                            title={`Video Tambahan ${index + 1}`}
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowFullScreen
+                            className="w-full h-full"
+                          ></iframe>
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center p-2">
+                            <p className="text-gray-500 text-xs text-center break-words">
+                              URL YouTube tidak valid: {url}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            
+            {/* Default video if no videos are specified */}
+            {!result.template.youtubeUrl && 
+             (!result.template.youtubeUrls || result.template.youtubeUrls.length === 0) && (
+              <div className="mb-4">
+                <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden shadow-lg">
+                  <video
+                    controls
+                    className="w-full h-full"
+                    poster="/images/video-poster.jpg"
+                    preload="metadata"
+                  >
+                    <source src="/videos/Video Test.mp4" type="video/mp4" />
+                    <p className="text-black p-4 text-center">
+                      Browser Anda tidak mendukung pemutaran video. Silakan unduh video untuk menonton.
+                    </p>
+                  </video>
+                </div>
+                <p className="text-sm text-black mt-2">
+                  Tonton video ini untuk mendapatkan panduan lengkap mengenai anjuran penanganan sesuai dengan hasil skrining pasien.
+                  Video ini berisi langkah-langkah yang direkomendasikan untuk tindak lanjut pasca-skrining.
+                </p>
+              </div>
+            )}
+            
+            {/* Add new video input */}
+            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+              <h4 className="text-sm font-semibold text-black mb-2">Tambah Video Baru</h4>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="text"
+                  value={newVideoUrl}
+                  onChange={(e) => setNewVideoUrl(e.target.value)}
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button
+                  onClick={addVideoUrl}
+                  disabled={isAddingVideo}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                 >
-                  <source src="/videos/Video Test.mp4" type="video/mp4" />
-                  <p className="text-black p-4 text-center">
-                    Browser Anda tidak mendukung pemutaran video. Silakan unduh video untuk menonton.
-                  </p>
-                </video>
-              )}
+                  {isAddingVideo ? 'Menambahkan...' : '+ Tambah Video'}
+                </button>
+              </div>
+              <p className="text-xs text-gray-600 mt-2">
+                Tambahkan video YouTube tambahan untuk membantu tindak lanjut hasil skrining.
+              </p>
             </div>
-            <p className="text-sm text-black mt-3">
-              Tonton video ini untuk mendapatkan panduan lengkap mengenai anjuran penanganan sesuai dengan hasil skrining pasien.
-              Video ini berisi langkah-langkah yang direkomendasikan untuk tindak lanjut pasca-skrining.
-            </p>
           </div>
 
           {/* Detailed Answers */}
