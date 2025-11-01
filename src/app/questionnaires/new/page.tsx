@@ -28,12 +28,31 @@ interface ResultTier {
 export default function NewQuestionnaire() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [youtubeUrl, setYoutubeUrl] = useState(''); // Original field for backward compatibility
+  const [youtubeUrls, setYoutubeUrls] = useState<string[]>(['']); // Array of additional video URLs with initial empty field
   const [jenisKuesioner, setJenisKuesioner] = useState<'Pasien' | 'Caregiver' | 'Keduanya'>('Pasien');
   const [questions, setQuestions] = useState<Question[]>([]);
   const [resultTiers, setResultTiers] = useState<ResultTier[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+
+  // Function to add new video URL input field
+  const addVideoUrl = () => {
+    setYoutubeUrls([...youtubeUrls, '']);
+  };
+
+  // Function to update video URL at specific index
+  const updateVideoUrl = (index: number, value: string) => {
+    const newUrls = [...youtubeUrls];
+    newUrls[index] = value;
+    setYoutubeUrls(newUrls);
+  };
+
+  // Function to remove video URL at specific index
+  const removeVideoUrl = (index: number) => {
+    const newUrls = youtubeUrls.filter((_, i) => i !== index);
+    setYoutubeUrls(newUrls);
+  };
 
   const addQuestion = (type: 'multiple_choice' | 'multiple_selection' | 'text_input') => {
     const newQuestion: Question = {
@@ -137,6 +156,9 @@ export default function NewQuestionnaire() {
     e.preventDefault();
     setIsLoading(true);
 
+    // Filter out empty URLs before submitting
+    const filteredYoutubeUrls = youtubeUrls.filter(url => url.trim() !== '');
+
     try {
       const token = getAuthToken();
       const response = await fetch('/api/questionnaires', {
@@ -149,6 +171,7 @@ export default function NewQuestionnaire() {
           title,
           description,
           youtubeUrl,
+          youtubeUrls: filteredYoutubeUrls, // Include the array of additional video URLs
           jenis_kuesioner: jenisKuesioner,
           questions: questions.map(q => ({
             text: q.text,
@@ -244,6 +267,48 @@ export default function NewQuestionnaire() {
                   Video ini akan ditampilkan pada hasil skrining sebagai panduan untuk pasien/caregiver
                 </p>
               </div>
+              
+              {/* Multiple Video URLs Section */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="block text-xs sm:text-sm font-medium text-black mb-1">
+                    Link Video Tambahan (Opsional)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={addVideoUrl}
+                    className="text-blue-600 hover:text-blue-800 text-xs px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                  >
+                    + Tambah Link
+                  </button>
+                </div>
+                
+                {youtubeUrls.map((url, index) => (
+                  <div key={index} className="flex items-center space-x-2">
+                    <input
+                      type="url"
+                      value={url}
+                      onChange={(e) => updateVideoUrl(index, e.target.value)}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                      placeholder={`https://www.youtube.com/watch?v=...`}
+                    />
+                    {youtubeUrls.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeVideoUrl(index)}
+                        className="text-red-600 hover:text-red-800 text-sm px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                ))}
+                
+                <p className="text-xs text-gray-500 mt-1">
+                  Tambahkan lebih dari satu video YouTube untuk ditampilkan saat hasil skrining
+                </p>
+              </div>
+              
               <div>
                 <label className="block text-xs sm:text-sm font-medium text-black mb-1">
                   Jenis Kuesioner *

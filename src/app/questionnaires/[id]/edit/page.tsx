@@ -27,6 +27,7 @@ interface Questionnaire {
   title: string;
   description?: string;
   youtubeUrl?: string;
+  youtubeUrls?: string[]; // Array of additional video URLs
   jenis_kuesioner?: 'Pasien' | 'Caregiver' | 'Keduanya';
   isPublic?: boolean;
   questions: Question[];
@@ -37,7 +38,8 @@ export default function EditQuestionnaire() {
   const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [youtubeUrl, setYoutubeUrl] = useState(''); // Original field for backward compatibility
+  const [youtubeUrls, setYoutubeUrls] = useState<string[]>(['']); // Array of additional video URLs with initial empty field
   const [jenisKuesioner, setJenisKuesioner] = useState<'Pasien' | 'Caregiver' | 'Keduanya'>('Pasien');
   const [isPublic, setIsPublic] = useState(false);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -72,6 +74,8 @@ export default function EditQuestionnaire() {
         setTitle(data.title);
         setDescription(data.description || '');
         setYoutubeUrl(data.youtubeUrl || '');
+        // Initialize youtubeUrls array - if it doesn't exist, initialize with an empty array
+        setYoutubeUrls(data.youtubeUrls && data.youtubeUrls.length > 0 ? [...data.youtubeUrls] : ['']);
         setJenisKuesioner(data.jenis_kuesioner || 'Pasien');
         setIsPublic(data.isPublic || false);
         
@@ -105,6 +109,29 @@ export default function EditQuestionnaire() {
       router.push('/dashboard');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Function to add new video URL input field
+  const addVideoUrl = () => {
+    setYoutubeUrls([...youtubeUrls, '']);
+  };
+
+  // Function to update video URL at specific index
+  const updateVideoUrl = (index: number, value: string) => {
+    const newUrls = [...youtubeUrls];
+    newUrls[index] = value;
+    setYoutubeUrls(newUrls);
+  };
+
+  // Function to remove video URL at specific index
+  const removeVideoUrl = (index: number) => {
+    const newUrls = youtubeUrls.filter((_, i) => i !== index);
+    // If the array becomes empty, add one empty field
+    if (newUrls.length === 0) {
+      setYoutubeUrls(['']);
+    } else {
+      setYoutubeUrls(newUrls);
     }
   };
 
@@ -196,6 +223,9 @@ export default function EditQuestionnaire() {
 
     setIsSaving(true);
 
+    // Filter out empty URLs before submitting
+    const filteredYoutubeUrls = youtubeUrls.filter(url => url.trim() !== '');
+
     try {
       const token = getAuthToken();
       const response = await fetch(`/api/questionnaires/${questionnaireId}`, {
@@ -208,6 +238,7 @@ export default function EditQuestionnaire() {
           title,
           description,
           youtubeUrl,
+          youtubeUrls: filteredYoutubeUrls, // Include the array of additional video URLs
           jenis_kuesioner: jenisKuesioner,
           isPublic,
           questions: questions.map(q => ({
@@ -323,6 +354,47 @@ export default function EditQuestionnaire() {
               />
               <p className="text-xs text-gray-500 mt-1">
                 Video ini akan ditampilkan pada hasil skrining sebagai panduan untuk pasien/caregiver
+              </p>
+            </div>
+
+            {/* Multiple Video URLs Section */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <label className="block text-sm font-medium text-black mb-2">
+                  Link Video Tambahan (Opsional)
+                </label>
+                <button
+                  type="button"
+                  onClick={addVideoUrl}
+                  className="text-blue-600 hover:text-blue-800 text-xs px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                >
+                  + Tambah Link
+                </button>
+              </div>
+              
+              {youtubeUrls.map((url, index) => (
+                <div key={index} className="flex items-center space-x-2 mb-2">
+                  <input
+                    type="url"
+                    value={url}
+                    onChange={(e) => updateVideoUrl(index, e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    placeholder={`https://www.youtube.com/watch?v=...`}
+                  />
+                  {youtubeUrls.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeVideoUrl(index)}
+                      className="text-red-600 hover:text-red-800 text-sm px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              ))}
+              
+              <p className="text-xs text-gray-500 mt-1">
+                Tambahkan lebih dari satu video YouTube untuk ditampilkan saat hasil skrining
               </p>
             </div>
 
