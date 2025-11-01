@@ -262,29 +262,29 @@ export default function Dashboard() {
             <div className="grid grid-cols-2 gap-4">
               <div className="aspect-square overflow-hidden rounded-lg border border-gray-200 flex items-center justify-center">
                 <img 
-                  src="/pictures/1100.jpg" 
-                  alt="Sistem Skrining Diabetes" 
+                  src="/pictures/wallpaper frame.jpg" 
+                  alt="Wallpaper Frame" 
                   className="w-full h-full object-cover"
                 />
               </div>
               <div className="aspect-square overflow-hidden rounded-lg border border-gray-200 flex items-center justify-center">
                 <img 
-                  src="/pictures/1300.jpg" 
-                  alt="Manajemen Pasien" 
+                  src="/pictures/wallpaper lantai.jpeg" 
+                  alt="Wallpaper Lantai" 
                   className="w-full h-full object-cover"
                 />
               </div>
               <div className="aspect-square overflow-hidden rounded-lg border border-gray-200 flex items-center justify-center">
                 <img 
-                  src="/pictures/1500.jpg" 
-                  alt="Dashboard Monitoring" 
+                  src="/pictures/wallpaper rak.jpeg" 
+                  alt="Wallpaper Rak" 
                   className="w-full h-full object-cover"
                 />
               </div>
               <div className="aspect-square overflow-hidden rounded-lg border border-gray-200 flex items-center justify-center">
                 <img 
-                  src="/pictures/1700.jpg" 
-                  alt="Hasil Skrining" 
+                  src="/pictures/wallpaper tv.jpeg" 
+                  alt="Wallpaper TV" 
                   className="w-full h-full object-cover"
                 />
               </div>
