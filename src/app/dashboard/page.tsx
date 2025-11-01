@@ -235,6 +235,64 @@ export default function Dashboard() {
         </div>
       </header>
 
+      {/* Introduction Section */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <div className="bg-white rounded-lg shadow p-6 mb-8">
+          <h2 className="text-xl font-bold text-black mb-4">Tentang SiCarAbet</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <p className="text-gray-700 mb-4">
+                SiCarAbet (Sistem Caring for Diabetes) adalah aplikasi web yang dirancang khusus untuk tenaga 
+                kesehatan dalam mengelola dan melakukan skrining serta pemantauan diabetes secara digital.
+              </p>
+              <p className="text-gray-700 mb-4">
+                Tujuan utama SiCarAbet adalah untuk:
+              </p>
+              <ul className="list-disc list-inside text-gray-700 mb-4 space-y-1">
+                <li>Meningkatkan efisiensi proses skrining diabetes</li>
+                <li>Memudahkan pengelolaan data pasien dan riwayat skrining</li>
+                <li>Menyediakan sistem penilaian otomatis dengan rekomendasi yang tepat</li>
+                <li>Mendukung pengambilan keputusan klinis yang lebih baik</li>
+              </ul>
+              <p className="text-gray-700">
+                Aplikasi ini menyediakan berbagai fitur seperti pembuatan kuesioner khusus, manajemen pasien, 
+                proses skrining digital, serta kemampuan ekspor data untuk analisis lebih lanjut.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="aspect-square overflow-hidden rounded-lg border border-gray-200 flex items-center justify-center">
+                <img 
+                  src="/pictures/wallpaper frame.jpg" 
+                  alt="Wallpaper Frame" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="aspect-square overflow-hidden rounded-lg border border-gray-200 flex items-center justify-center">
+                <img 
+                  src="/pictures/wallpaper lantai.jpeg" 
+                  alt="Wallpaper Lantai" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="aspect-square overflow-hidden rounded-lg border border-gray-200 flex items-center justify-center">
+                <img 
+                  src="/pictures/wallpaper rak.jpeg" 
+                  alt="Wallpaper Rak" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="aspect-square overflow-hidden rounded-lg border border-gray-200 flex items-center justify-center">
+                <img 
+                  src="/pictures/wallpaper tv.jpeg" 
+                  alt="Wallpaper TV" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div className={`grid grid-cols-1 ${isUser ? 'lg:grid-cols-1' : 'lg:grid-cols-2'} gap-4 sm:gap-8`}>
           {/* Patient Management */}

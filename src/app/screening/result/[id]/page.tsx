@@ -27,6 +27,7 @@ interface ScreeningResult {
   template: {
     title: string;
     youtubeUrl?: string;
+    youtubeUrls?: string[]; // Array of YouTube URLs for multiple videos
     questions: {
       text: string;
       type: 'multiple_choice' | 'multiple_selection' | 'text_input';
@@ -206,47 +207,89 @@ export default function ScreeningResultPage() {
           {/* Video Anjuran Penanganan */}
           <div className="mb-6 sm:mb-8">
             <h3 className="text-base sm:text-lg font-semibold text-black mb-3 sm:mb-4">Anjuran Penanganan</h3>
-            <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden shadow-lg">
-              {result.template.youtubeUrl ? (
-                // YouTube Video
-                (() => {
-                  const videoId = getYouTubeVideoId(result.template.youtubeUrl);
-                  return videoId ? (
-                    <iframe
-                      src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`}
-                      title="Video Anjuran Penanganan"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      allowFullScreen
-                      className="w-full h-full"
-                    ></iframe>
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <p className="text-gray-500 text-sm text-center px-4">
-                        URL YouTube tidak valid: {result.template.youtubeUrl}
-                      </p>
-                    </div>
-                  );
-                })()
-              ) : (
-                // Fallback ke video lokal
-                <video
-                  controls
-                  className="w-full h-full"
-                  poster="/images/video-poster.jpg"
-                  preload="metadata"
-                >
-                  <source src="/videos/Video Test.mp4" type="video/mp4" />
-                  <p className="text-black p-4 text-center">
-                    Browser Anda tidak mendukung pemutaran video. Silakan unduh video untuk menonton.
-                  </p>
-                </video>
-              )}
-            </div>
-            <p className="text-sm text-black mt-3">
-              Tonton video ini untuk mendapatkan panduan lengkap mengenai anjuran penanganan sesuai dengan hasil skrining pasien.
-              Video ini berisi langkah-langkah yang direkomendasikan untuk tindak lanjut pasca-skrining.
-            </p>
+            
+            {/* Existing single video or default video */}
+            {result.template.youtubeUrl && (
+              <div className="mb-4">
+                <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden shadow-lg">
+                  {(() => {
+                    const videoId = getYouTubeVideoId(result.template.youtubeUrl);
+                    return videoId ? (
+                      <iframe
+                        src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`}
+                        title="Video Anjuran Penanganan"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                        className="w-full h-full"
+                      ></iframe>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <p className="text-gray-500 text-sm text-center px-4">
+                          URL YouTube tidak valid: {result.template.youtubeUrl}
+                        </p>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            )}
+
+            {/* Additional multiple videos from template - same size as main video with vertical layout */}
+            {result.template.youtubeUrls && result.template.youtubeUrls.length > 0 && (
+              <div className="space-y-4">
+                <div className="space-y-4">
+                  {result.template.youtubeUrls.map((url, index) => {
+                    if (!url.trim()) return null;
+                    const videoId = getYouTubeVideoId(url);
+                    return (
+                      <div key={index} className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden shadow-lg">
+                        {videoId ? (
+                          <iframe
+                            src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`}
+                            title={`Video Tambahan ${index + 1}`}
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowFullScreen
+                            className="w-full h-full"
+                          ></iframe>
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center p-2">
+                            <p className="text-gray-500 text-xs text-center break-words">
+                              URL YouTube tidak valid: {url}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            
+            {/* Default video if no videos are specified */}
+            {!result.template.youtubeUrl && 
+             (!result.template.youtubeUrls || result.template.youtubeUrls.length === 0) && (
+              <div className="mb-4">
+                <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden shadow-lg">
+                  <video
+                    controls
+                    className="w-full h-full"
+                    poster="/images/video-poster.jpg"
+                    preload="metadata"
+                  >
+                    <source src="/videos/Video Test.mp4" type="video/mp4" />
+                    <p className="text-black p-4 text-center">
+                      Browser Anda tidak mendukung pemutaran video. Silakan unduh video untuk menonton.
+                    </p>
+                  </video>
+                </div>
+                <p className="text-sm text-black mt-2">
+                  Tonton video ini untuk mendapatkan panduan lengkap mengenai anjuran penanganan sesuai dengan hasil skrining pasien.
+                  Video ini berisi langkah-langkah yang direkomendasikan untuk tindak lanjut pasca-skrining.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Detailed Answers */}
