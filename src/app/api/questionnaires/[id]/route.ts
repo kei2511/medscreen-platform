@@ -28,7 +28,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { title, description, youtubeUrl, jenis_kuesioner, questions, resultTiers, isPublic } = body;
+    const { title, description, youtubeUrl, youtubeUrls, jenis_kuesioner, questions, resultTiers, isPublic } = body;
 
     // Validate input
     if (!title || !Array.isArray(questions) || !Array.isArray(resultTiers) || !jenis_kuesioner) {
@@ -60,6 +60,7 @@ export async function PUT(
         title,
         description,
         youtubeUrl: youtubeUrl || null,
+        youtubeUrls: youtubeUrls || [], // Include the array of additional video URLs
         jenis_kuesioner,
         questions: questions as any,
         resultTiers: resultTiers as any,

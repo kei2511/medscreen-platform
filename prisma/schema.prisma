@@ -8,18 +8,18 @@ datasource db {
 }
 
 model Doctor {
-  id         String                  @id @default(cuid())
-  email      String                  @unique
-  password   String
-  name       String?
-  createdAt  DateTime                @default(now())
-  updatedAt  DateTime                @updatedAt
-  role       Role                    @default(USER)
-  caregivers Caregiver[]
-  patients   Patient[]
-  templates  QuestionnaireTemplate[]
-  results    ScreeningResult[]
+  id                  String                  @id @default(cuid())
+  email               String                  @unique
+  password            String
+  name                String?
+  createdAt           DateTime                @default(now())
+  updatedAt           DateTime                @updatedAt
+  role                Role                    @default(USER)
   calorieCalculations CalorieCalculation[]
+  caregivers          Caregiver[]
+  patients            Patient[]
+  templates           QuestionnaireTemplate[]
+  results             ScreeningResult[]
 }
 
 model Caregiver {
@@ -31,28 +31,28 @@ model Caregiver {
   doctorId               String
   createdAt              DateTime             @default(now())
   updatedAt              DateTime             @updatedAt
+  calorieCalculations    CalorieCalculation[]
   doctor                 Doctor               @relation(fields: [doctorId], references: [id])
   patients               Patient[]
   results                ScreeningResult[]
-  calorieCalculations    CalorieCalculation[]
 }
 
 model Patient {
-  id                String            @id @default(cuid())
-  name              String
-  age               Int
-  doctorId          String
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
-  caregiverId       String?
-  jenis_kelamin     Int?
-  lama_menderita_dm Float?
-  penyakit_lain     String?
-  umur_pasien       Int?
-  caregiver         Caregiver?        @relation(fields: [caregiverId], references: [id])
-  doctor            Doctor            @relation(fields: [doctorId], references: [id])
-  results           ScreeningResult[]
+  id                  String               @id @default(cuid())
+  name                String
+  age                 Int
+  doctorId            String
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  caregiverId         String?
+  jenis_kelamin       Int?
+  lama_menderita_dm   Float?
+  penyakit_lain       String?
+  umur_pasien         Int?
   calorieCalculations CalorieCalculation[]
+  caregiver           Caregiver?           @relation(fields: [caregiverId], references: [id])
+  doctor              Doctor               @relation(fields: [doctorId], references: [id])
+  results             ScreeningResult[]
 }
 
 model QuestionnaireTemplate {
@@ -62,11 +62,12 @@ model QuestionnaireTemplate {
   doctorId              String
   questions             Json
   resultTiers           Json
-  youtubeUrl            String?
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
   jenis_kuesioner       JenisKuesioner         @default(Pasien)
   isPublic              Boolean                @default(false)
+  youtubeUrl            String?
+  youtubeUrls           String[]               @default([])
   doctor                Doctor                 @relation(fields: [doctorId], references: [id])
   respondentSubmissions RespondentSubmission[]
   results               ScreeningResult[]
@@ -82,6 +83,7 @@ model ScreeningResult {
   resultLabel    String
   recommendation String?
   answers        Json
+  youtubeUrls    String[]              @default([]) // Array of YouTube URLs for multiple videos in the result
   createdAt      DateTime              @default(now())
   updatedAt      DateTime              @updatedAt
   caregiverId    String?
@@ -107,21 +109,21 @@ model Respondent {
 }
 
 model CalorieCalculation {
-  id              String   @id @default(cuid())
-  patientId       String?
-  caregiverId     String?
-  doctorId        String
-  gender          String
-  heightCm        Float
-  weightKg        Float
-  age             Int
-  activity        String
-  result          Json
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  patient         Patient? @relation(fields: [patientId], references: [id])
-  caregiver       Caregiver? @relation(fields: [caregiverId], references: [id])
-  doctor          Doctor   @relation(fields: [doctorId], references: [id])
+  id          String     @id @default(cuid())
+  patientId   String?
+  caregiverId String?
+  doctorId    String
+  gender      String
+  heightCm    Float
+  weightKg    Float
+  age         Int
+  activity    String
+  result      Json
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  caregiver   Caregiver? @relation(fields: [caregiverId], references: [id])
+  doctor      Doctor     @relation(fields: [doctorId], references: [id])
+  patient     Patient?   @relation(fields: [patientId], references: [id])
 }
 
 model RespondentSubmission {
