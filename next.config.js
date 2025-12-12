@@ -31,6 +31,7 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  turbopack: {},
 };
 
 module.exports = withPWA(nextConfig);
