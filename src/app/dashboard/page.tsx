@@ -236,53 +236,71 @@ export default function Dashboard() {
       {/* Introduction Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h2 className="text-xl font-bold text-black mb-4">Tentang SiCarAbet</h2>
+          <h2 className="text-xl font-bold text-black mb-4">Deskripsi Aplikasi Si-CarAbet</h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div>
-              <p className="text-gray-700 mb-4">
-                SiCarAbet (Sistem Caring for Diabetes) adalah aplikasi web yang dirancang khusus untuk tenaga 
-                kesehatan dalam mengelola dan melakukan skrining serta pemantauan diabetes secara digital.
+            <div className="text-gray-700 space-y-4 text-justify">
+              <p>
+                Si-CarAbet merupakan sebuah aplikasi berbasis web yang dirancang untuk membantu keluarga pasien diabetes mellitus (DM) dalam memberikan dukungan perawatan diri. Aplikasi ini berfokus pada penerapan Pilar Penatalaksanaan Diabetes Melitus (DM) meliputi edukasi, terapi nutrisi, terapi farmakologi, terapi aktivitas, dan terapi emosi serta Pemeriksaan Gula darah secara mandiri.
               </p>
-              <p className="text-gray-700 mb-4">
-                Tujuan utama SiCarAbet adalah untuk:
+              <p>
+                Dengan Si-CarAbet, keluarga bukan hanya menjadi pendamping tetapi juga mitra aktif dalam perawatan pasien diabetes, membantu pasien menjalani hidup yang lebih sehat, mandiri, dan berkualitas.
               </p>
-              <ul className="list-disc list-inside text-gray-700 mb-4 space-y-1">
-                <li>Meningkatkan efisiensi proses skrining diabetes</li>
-                <li>Memudahkan pengelolaan data pasien dan riwayat skrining</li>
-                <li>Menyediakan sistem penilaian otomatis dengan rekomendasi yang tepat</li>
-                <li>Mendukung pengambilan keputusan klinis yang lebih baik</li>
-              </ul>
-              <p className="text-gray-700">
-                Aplikasi ini menyediakan berbagai fitur seperti pembuatan kuesioner khusus, manajemen pasien, 
-                proses skrining digital, serta kemampuan ekspor data untuk analisis lebih lanjut.
+              <p>
+                Tujuan memudahkan keluarga dalam memberikan perawatan secara mandiri dan aplikatif. Aplikasi ini diharapkan memberikan kemudahan pada keluarga untuk mengakses cara perawatan tanpa harus meninggalkan rumah.
               </p>
+
+              <p>SiCarAbet menyediakan berbagai fitur.</p>
+
+              <div>
+                <h3 className="font-semibold text-black mb-2">Fitur Utama SiCarabet:</h3>
+                <ol className="list-decimal list-outside ml-5 space-y-2">
+                  <li>
+                    <span className="font-semibold">Edukasi Diabetes:</span> pengenalan tentang Diabetes Mellitus. Informasi ini sangat berguna untuk keluarga pasien agar dapat mendukung perawatan dengan lebih baik.
+                  </li>
+                  <li>
+                    <span className="font-semibold">Terapi Nutrisi:</span> berisi panduan tentang pola makan meliputi 3 J: Jumlah, Jenis dan jadwal makan.
+                  </li>
+                  <li>
+                    <span className="font-semibold">Terapi Farmakologi:</span> menyajikan informasi terkait obat-obatan yang digunakan kepada pasien diabetes, termasuk cara penggunaan yang benar, jadwal minum obat, dosis obat. Aplikasi ini juga memiliki fitur pengingat untuk memastikan pasien dan keluarga tidak melewatkan jadwal pengobatan.
+                  </li>
+                  <li>
+                    <span className="font-semibold">Terapi Aktivitas:</span> memberikan panduan aktivitas fisik yang aman dan bermanfaat bagi pasien diabetes. Pada aplikasi ini terdapat video perawatan dan senam kaki, serta senam deabet.
+                  </li>
+                  <li>
+                    <span className="font-semibold">Terapi Emosi:</span> Aplikasi ini menawarkan tips untuk mengelola stres, kecemasan, dan perasaan frustrasi yang sering dirasakan oleh penderita diabetes, serta menyediakan ruang untuk berbagi pengalaman dan mendapatkan dukungan dari sesama keluarga penderita diabetes.
+                  </li>
+                  <li>
+                    <span className="font-semibold">Pemeriksaan Gula Darah Mandiri:</span> Fitur ini memberikan pengetahuan cara memantau kadar gula darah secara rutin dengan fitur pencatatan hasil pemeriksaan, grafik tren gula darah, serta rekomendasi tindakan berdasarkan hasil yang tercatat.
+                  </li>
+                </ol>
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="aspect-square overflow-hidden rounded-lg border border-gray-200 flex items-center justify-center">
-                <img 
-                  src="/pictures/wallpaper frame.jpg" 
-                  alt="Wallpaper Frame" 
+                <img
+                  src="/pictures/wallpaper frame.jpg"
+                  alt="Wallpaper Frame"
                   className="w-full h-full object-cover"
                 />
               </div>
               <div className="aspect-square overflow-hidden rounded-lg border border-gray-200 flex items-center justify-center">
-                <img 
-                  src="/pictures/wallpaper lantai.jpeg" 
-                  alt="Wallpaper Lantai" 
+                <img
+                  src="/pictures/wallpaper lantai.jpeg"
+                  alt="Wallpaper Lantai"
                   className="w-full h-full object-cover"
                 />
               </div>
               <div className="aspect-square overflow-hidden rounded-lg border border-gray-200 flex items-center justify-center">
-                <img 
-                  src="/pictures/wallpaper rak.jpeg" 
-                  alt="Wallpaper Rak" 
+                <img
+                  src="/pictures/wallpaper rak.jpeg"
+                  alt="Wallpaper Rak"
                   className="w-full h-full object-cover"
                 />
               </div>
               <div className="aspect-square overflow-hidden rounded-lg border border-gray-200 flex items-center justify-center">
-                <img 
-                  src="/pictures/wallpaper tv.jpeg" 
-                  alt="Wallpaper TV" 
+                <img
+                  src="/pictures/wallpaper tv.jpeg"
+                  alt="Wallpaper TV"
                   className="w-full h-full object-cover"
                 />
               </div>
